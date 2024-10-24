@@ -38,10 +38,15 @@ bool tokiscalltrailingparen = false;
 
 uint8_t ch;
 uint16_t scratch; // `ax`.
+uint16_t scratchsave;
 uint16_t currenttoken; // `bx`.
 uint16_t currenttokensave; 
 uint16_t lasttwochars; // `cx`.
+uint16_t tablescan; // `si`.
+uint8_t *symboltable; // `ds`.
 uint16_t codegenoffset; // `di`.
+uint16_t codegenoffsetsave;
+uint8_t *codegenbuffer; // `es`.
 
 void tok_next() {
 toknext:
@@ -109,13 +114,117 @@ void tok_next2() {
     goto toknext;
 }
 
+void control_block_flow() {
+    compile_stmts_tok_next();
+
+    // TODO: Emit `test ax,ax` instruction.
+    codegenbuffer[codegenoffset] = (uint8_t)(scratch >> 8);
+    codegenbuffer[codegenoffset + 1] = (uint8_t)(scratch & 0x00ff);
+    codegenoffset = codegenoffset + 2;
+    // TODO: Emit jump if equal instruction.
+    codegenbuffer[codegenoffset] = (uint8_t)(scratch >> 8);
+    codegenbuffer[codegenoffset + 1] = (uint8_t)(scratch & 0x00ff);
+    codegenoffset = codegenoffset + 2;
+    codegenbuffer[codegenoffset] = (uint8_t)(scratch >> 8);
+    codegenbuffer[codegenoffset + 1] = (uint8_t)(scratch & 0x00ff);
+    codegenoffset = codegenoffset + 2;
+
+    codegenoffsetsave = codegenoffset;
+    compile_stmts_tok_next();
+    tablescan = codegenoffsetsave;
+}
+
+void compile_assign() {
+    if(scratch != TOK_DEREF) {
+        goto not_deref_store;
+    }
+    tok_next();
+    save_var_and_compile_expr();
+}
+
+void compile_stmts() {
+compilestmts:
+    scratch = currenttoken;
+    if(scratch == TOK_BLK_END) {
+        return;
+    }
+
+    if(!tokiscalltrailingparen) {
+        goto not_call;
+    }
+
+    // TODO: Emit call instruction to scratch;
+    codegenbuffer[codegenoffset] = (uint8_t)(scratch & 0x00ff);
+    codegenoffset = codegenoffset + 1;
+
+    scratch = symboltable[currenttoken];
+    scratch = scratch - codegenoffset;
+    scratch = scratch - 2;
+    codegenbuffer[codegenoffset] = (uint8_t)(scratch >> 8);
+    codegenbuffer[codegenoffset + 1] = (uint8_t)(scratch & 0x00ff);
+    codegenoffset = codegenoffset + 2;
+
+    goto compilestmtstoknext2;
+
+not_call:
+    if(scratch != TOK_ASM) {
+        goto not_asm;
+    }
+    tok_next();
+    codegenbuffer[codegenoffset] = (uint8_t)(scratch & 0x00ff);
+    codegenoffset = codegenoffset + 1;
+    goto compilestmtstoknext2;
+
+not_asm:
+    if(scratch != TOK_IF_BEGIN) {
+        goto not_if;
+    }
+    control_block_flow();
+    goto patch_fwd;
+
+not_if:
+    if(scratch != TOK_WHILE_BEGIN) {
+        goto not_while;
+    }
+    codegenoffsetsave = codegenoffset;
+    control_block_flow();
+    goto patch_back;
+
+not_while:
+    compile_assign();
+    goto compilestmts;
+
+patch_back:
+    // TODO: Emit jump instruction.
+    codegenbuffer[codegenoffset] = (uint8_t)(scratch & 0x00ff);
+    codegenoffset = codegenoffset + 1;
+    scratch = codegenoffsetsave; // I think this is right.
+    scratch = scratch - codegenoffset;
+    scratch = scratch - 2;
+    codegenbuffer[codegenoffset] = (uint8_t)(scratch >> 8);
+    codegenbuffer[codegenoffset + 1] = (uint8_t)(scratch & 0x00ff);
+    codegenoffset = codegenoffset + 2;
+
+patch_fwd:
+    scratch = codegenoffset;
+    scratch = scratch - tablescan;
+    codegenbuffer[tablescan - 2] = (uint8_t)(scratch >> 8);
+    codegenbuffer[tablescan - 1] = (uint8_t)(scratch & 0x00ff);
+    goto compilestmtstoknext;
+
+compilestmtsend:
+    return;
+}
+
 void compile_stmts_tok_next() {
 compilestmtstoknext:
-    //
+    tok_next();
+    goto compilesmts;
 }
 
 void compile_stmts_tok_next2() {
-    compile_stmts_tok_next();
+compilestmtstoknext2:
+    tok_next();
     goto compilestmtstoknext;
 }
 
@@ -136,6 +245,6 @@ compile:
 compile_function:
     tok_next();
     currenttokensave = currenttoken;
-    // TODO: Record function address in symbol table.
-
+    symboltable[currenttoken] = codegenoffset;
+    compile_stmts_tok_next2();
 }
