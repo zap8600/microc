@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define TOK_INT 6388
 #define TOK_VOID 11386
@@ -36,7 +37,7 @@
 This `atoi` implementation is from [the `sectorc` page](https://xorvoid.com/sectorc.html).
 */
 
-int atoi(const char) {
+int atoi(const char *s) {
     int n = 0;
     while(1) {
         char c = *s++;
@@ -46,9 +47,67 @@ int atoi(const char) {
     return n;
 }
 
-uint16_t codegenoffset; // Set to 0 by `.bss` segment.
-// TODO: I need a symbol buffer and a codegen output buffer
+bool tokisnum = false;
+bool tokiscalltrailingparen = false;
+
+uint8_t ch;
+uint16_t scratch; // `ax`.
+uint16_t currenttoken; // `bx`.
+uint16_t lasttwochars; // `cx`.
+uint16_t codegenoffset; // `di`.
+
+void tok_next() {
+toknext:
+    // TODO: Get character.
+    ch = (uint8_t)(scratch & 0x00ff);
+    if(ch <= 32) {
+        goto toknext;
+    }
+
+    currenttoken = 0;
+    lasttwochars = 0;
+
+    if(ch <= 57) {
+        tokisnum = true;
+    }
+
+nextch:
+    if(ch <= 32) {
+        goto done;
+    }
+
+done:
+    scratch = lasttwochars;
+
+    if(scratch == 0x2f2f) {
+        goto comment_double_slash;
+    } else if (scratch == 0x2f2a) {
+        goto comment_multi_line;
+    }
+
+    if(scratch == 0x2829) {
+        tokiscalltrailingparen = true;
+    }
+
+    scratch = currenttoken;
+    return;
+
+comment_double_slash:
+    // TODO: Get character.
+    while(ch != 10) {
+        // TODO: Get character.
+    }
+    goto toknext;
+
+comment_multi_line:
+    tok_next();
+    while(scratch != 65475) {
+        tok_next();
+    }
+    goto toknext;
+}
 
 int main() {
-    //
+    codegenoffset = 0;
+    goto toknext;
 }
