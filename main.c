@@ -33,26 +33,13 @@
 #define TOK_LE 133
 #define TOK_GE 153
 
-/*
-This `atoi` implementation is from [the `sectorc` page](https://xorvoid.com/sectorc.html).
-*/
-
-int atoi(const char *s) {
-    int n = 0;
-    while(1) {
-        char c = *s++;
-        if(!c) break;
-        n = 10 * n + (c - '0');
-    }
-    return n;
-}
-
 bool tokisnum = false;
 bool tokiscalltrailingparen = false;
 
 uint8_t ch;
 uint16_t scratch; // `ax`.
 uint16_t currenttoken; // `bx`.
+uint16_t currenttokensave; 
 uint16_t lasttwochars; // `cx`.
 uint16_t codegenoffset; // `di`.
 
@@ -72,8 +59,18 @@ toknext:
     }
 
 nextch:
-    if(ch <= 32) {
-        goto done;
+    while(1) {
+        if(ch <= 32) {
+            break;
+        }
+
+        lasttwochars = (lasttwochars << 8) | ((uint16_t)scratch & 0xff);
+
+        currenttoken = scratch * 10;
+        scratch = scratch - 48;
+        currenttoken = currenttoken + scratch;
+
+        // TODO: Get character.
     }
 
 done:
@@ -107,7 +104,38 @@ comment_multi_line:
     goto toknext;
 }
 
+void tok_next2() {
+    tok_next();
+    goto toknext;
+}
+
+void compile_stmts_tok_next() {
+compilestmtstoknext:
+    //
+}
+
+void compile_stmts_tok_next2() {
+    compile_stmts_tok_next();
+    goto compilestmtstoknext;
+}
+
 int main() {
     codegenoffset = 0;
-    goto toknext;
+
+compile:
+    while(1) {
+        tok_next();
+
+        if(scratch != TOK_INT) {
+            break;
+        }
+
+        tok_next2();
+    }
+
+compile_function:
+    tok_next();
+    currenttokensave = currenttoken;
+    // TODO: Record function address in symbol table.
+
 }
