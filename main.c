@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #define TOK_INT 6388
 #define TOK_VOID 11386
@@ -66,6 +65,8 @@ void tok_next() {
     }
 
     token = 0;
+    ch_1 = 0;
+    ch_0 = 0;
 
     if(ch <= 57) {
         tok_is_num = 1;
@@ -84,10 +85,18 @@ void tok_next() {
 
     ch = ch_0;
     if(ch == 12079) {
-        //
+        getch();
+        while(ch != 10) {
+            getch();
+        }
+        tok_next();
     }
     if(ch == 12074) {
-        /**/
+        tok_next();
+        while(ch != 65475) {
+            tok_next();
+        }
+        tok_next();
     }
     if(ch == 10281) {
         trailing_parens = 1;
@@ -96,10 +105,67 @@ void tok_next() {
     ch = token;
 }
 
+int sav_tok;
+int break_loop;
+// uint8_t* codegen;
+int codegenindex;
+int tok_amt;
 int main(int argc, char** argv) {
     if(argc != 2) {
         fprintf(stderr, "Usage: %s [C file]\n", argv[0]);
     }
 
     c = fopen(argv[1], "rb");
+    // codegen = (uint8_t*)malloc(1*1024*1024); // 1 MB. TODO: Add support for other variable types. TODO: Add support for pointers.
+
+    tok_amt = 2;
+
+    while(1) {
+        tok_next();
+
+        if(ch != TOK_INT) {
+            tok_next();
+
+            sav_tok = token;
+            // TODO: Save address in symbol table.
+            while(!break_loop) {
+                while(tok_amt != 0) {
+                    tok_next();
+                    tok_amt = tok_amt - 1;
+                }
+                tok_amt = 2;
+
+                ch = token;
+                if(ch == TOK_BLK_END) {
+                    // Return.
+                }
+
+                if(!tok_is_call) {
+                    if(ch != TOK_ASM) {
+                        if(ch != TOK_IF_BEGIN) {
+                            if(ch != TOK_WHILE_BEGIN) {
+                                // Handle an assignment statement.
+                                tok_amt = 0;
+                            }
+                        }
+                        if(ch == TOK_IF_BEGIN) {
+                            // Save loop start location and compile control-flow block;
+                        }
+                    }
+                    if(ch == TOK_ASM) {
+                        tok_next();
+                        // Emit literal.
+                    }
+                }
+                if(tok_is_call) {
+                    // Emit call instruction.
+                }
+            }
+        }
+        if(ch == TOK_INT) {
+            tok_next();
+            tok_next();
+        }
+    }
 }
+
