@@ -106,7 +106,6 @@ void tok_next() {
 }
 
 int sav_tok;
-int break_loop;
 // uint8_t* codegen;
 int codegenindex;
 int tok_amt;
@@ -128,7 +127,7 @@ int main(int argc, char** argv) {
 
             sav_tok = token;
             // TODO: Save address in symbol table.
-            while(!break_loop) {
+            while(1) {
                 while(tok_amt != 0) {
                     tok_next();
                     tok_amt = tok_amt - 1;
@@ -137,7 +136,7 @@ int main(int argc, char** argv) {
 
                 ch = token;
                 if(ch == TOK_BLK_END) {
-                    // Return.
+                    break;
                 }
 
                 if(!tok_is_call) {
@@ -147,25 +146,40 @@ int main(int argc, char** argv) {
                                 // Handle an assignment statement.
                                 tok_amt = 0;
                             }
+                            if(ch == TOK_WHILE_BEGIN) {
+                                puts("While loop.\n");
+                            }
                         }
                         if(ch == TOK_IF_BEGIN) {
                             // Save loop start location and compile control-flow block;
+                            puts("If loop.\n");
                         }
                     }
                     if(ch == TOK_ASM) {
                         tok_next();
                         // Emit literal.
+                        puts("Assembly.\n");
                     }
                 }
                 if(tok_is_call) {
                     // Emit call instruction.
+                    puts("Call.\n");
                 }
+            }
+            puts("Return.\n");
+            token = sav_tok;
+            if(token == TOK_START) {
+                break;
             }
         }
         if(ch == TOK_INT) {
             tok_next();
             tok_next();
+            puts("Int.\n");
         }
     }
+    fclose(c);
+    puts("Execute.\n");
+    return 0;
 }
 
