@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #define TOK_INT 6388
@@ -34,54 +35,62 @@
 
 FILE* c;
 
-int semicolon;
-int ch;
-
-void getch() {
+bool semicolon;
+char getch() {
     if(semicolon) {
-        semicolon = 0;
+        semicolon = false;
         ch = 59;
     }
-    ch = getc(c); // TODO: Expand subset, as this is incompatible with this subset of C, meaning the compiler can't compile itself.
+    int ch = getc(c); // TODO: Expand subset, as this is incompatible with this subset of C, meaning the compiler can't compile itself.
     if(ch == 59) {
-        semicolon = 1;
+        semicolon = true;
         ch = 0;
     }
+    return (char)ch;
 }
 
-int token;
-int ch_1;
-int ch_0;
-int tok_is_num;
-int tok_is_call;
-int trailing_parens;
+bool tok_is_num;
+bool tok_is_call;
+bool trailing_parens;
 
-void tok_next() {
-    getch();
-    if(ch == 32) {
-        while(ch == 32) {
-            getch();
-        }
-    }
+int tok_next() {
+    char ch = getch();
+    while((ch = getch()) == 32) {}
 
-    token = 0;
-    ch_1 = 0;
-    ch_0 = 0;
+    int token = 0;
+    char lasttwo[2];
+    lasttwo[0] = 0;
+    lasttwo[1] = 0;
 
     if(ch <= 57) {
-        tok_is_num = 1;
+        tok_is_num = true;
     }
 
     while(ch != 32) {
-        ch_1 = ch_0;
-        ch_0 = ch;
+        lasttwo[1] = lasttwo[0];
+        lasttwo[0] = ch;
 
-        token = token * 10;
-        ch = ch - 48;
-        token = token + ch;
+        token = 10 * token + (c - 48);
 
-        getch();
+        ch = getch();
     }
+
+    if(*(uint16_t*)lasttwo == 0x2f2f) {
+        while(ch != 10) {
+            ch = getch();
+        }
+        return tok_next();
+    } else if(*(uint16_t*)lasttwo == 0x2f2a) {
+        while(*(uint16_t*)lasttwo != 65475) {
+            *(uint16_t*)lasttwo = tok_next();
+        }
+        return tok_next();
+    }
+    if(*(uint16_t*)lasttwo == 0x2829) {
+        trailing_parens = true;
+    }
+
+    return token;
 }
 
 int main(int argc, char** argv) {
