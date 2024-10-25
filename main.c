@@ -82,33 +82,8 @@ void tok_next() {
 
         getch();
     }
-
-    ch = ch_0;
-    if(ch == 12079) {
-        getch();
-        while(ch != 10) {
-            getch();
-        }
-        tok_next();
-    }
-    if(ch == 12074) {
-        tok_next();
-        while(ch != 65475) {
-            tok_next();
-        }
-        tok_next();
-    }
-    if(ch == 10281) {
-        trailing_parens = 1;
-    }
-
-    ch = token;
 }
 
-int sav_tok;
-// uint8_t* codegen;
-int codegenindex;
-int tok_amt;
 int main(int argc, char** argv) {
     if(argc != 2) {
         fprintf(stderr, "Usage: %s [C file]\n", argv[0]);
@@ -116,71 +91,10 @@ int main(int argc, char** argv) {
     }
 
     c = fopen(argv[1], "rb");
-    // codegen = (uint8_t*)malloc(1*1024*1024); // 1 MB. TODO: Add support for other variable types. TODO: Add support for pointers.
 
-    tok_amt = 2;
+    
 
-    while(1) {
-        tok_next();
-
-        if(ch != TOK_INT) {
-            tok_next();
-
-            sav_tok = token;
-            // TODO: Save address in symbol table.
-            while(1) {
-                while(tok_amt != 0) {
-                    tok_next();
-                    tok_amt = tok_amt - 1;
-                }
-                tok_amt = 2;
-
-                ch = token;
-                if(ch == TOK_BLK_END) {
-                    break;
-                }
-
-                if(!tok_is_call) {
-                    if(ch != TOK_ASM) {
-                        if(ch != TOK_IF_BEGIN) {
-                            if(ch != TOK_WHILE_BEGIN) {
-                                // Handle an assignment statement.
-                                tok_amt = 0;
-                            }
-                            if(ch == TOK_WHILE_BEGIN) {
-                                puts("While loop.\n");
-                            }
-                        }
-                        if(ch == TOK_IF_BEGIN) {
-                            // Save loop start location and compile control-flow block;
-                            puts("If loop.\n");
-                        }
-                    }
-                    if(ch == TOK_ASM) {
-                        tok_next();
-                        // Emit literal.
-                        puts("Assembly.\n");
-                    }
-                }
-                if(tok_is_call) {
-                    // Emit call instruction.
-                    puts("Call.\n");
-                }
-            }
-            puts("Return.\n");
-            token = sav_tok;
-            if(token == TOK_START) {
-                break;
-            }
-        }
-        if(ch == TOK_INT) {
-            tok_next();
-            tok_next();
-            puts("Int.\n");
-        }
-    }
     fclose(c);
-    puts("Execute.\n");
     return 0;
 }
 
