@@ -34,6 +34,8 @@
 #define TOK_LE 133
 #define TOK_GE 153
 
+#define TOK_RET 7205622
+
 FILE* c;
 
 bool semi;
@@ -51,7 +53,7 @@ int getch() {
     }
 }
 
-bool tok_is_num;\
+bool tok_is_num;
 int tok_next() {
     int token = 0;
 
@@ -71,6 +73,7 @@ int tok_next() {
     return token;
 }
 
+int savedtok;
 int main(int argc, char** argv) {
     if(argc != 2) {
         fprintf(stderr, "Usage: %s [C file]", argv[0]);
@@ -78,11 +81,22 @@ int main(int argc, char** argv) {
     }
 
     c = fopen(argv[1], "rb");
-    // symboltable = (int*)malloc(1 * 1024 * 1024);
+    int* symboltable = (int*)malloc(1 * 1024 * 1024);
 
-    printf("%d\n", tok_next());
+    printf("  .globl main\nmain:\n");
+
+    while(1) {
+        int token = tok_next();
+        if(token != TOK_INT) {
+            savedtok = token;
+            
+        } else {
+            tok_next();
+            continue;
+        }
+    }
 
     fclose(c);
-    // free(symboltable);
+    free(symboltable);
     return 0;
 }
