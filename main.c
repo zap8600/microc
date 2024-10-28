@@ -36,67 +36,26 @@
 
 FILE* c;
 
-bool semicolon;
-char getch() {
-    int ch;
-    if(semicolon) {
-        semicolon = false;
-        ch = 59;
-        return (char)ch;
-    }
-    ch = getc(c); // TODO: Expand subset, as this is incompatible with this subset of C, meaning the compiler can't compile itself.
-    if(ch == 59) {
-        semicolon = true;
-        ch = 0;
-    }
-    return (char)ch;
-}
-
 bool tok_is_num;
-bool tok_is_call;
 
 int tok_next() {
-    char ch = getch();
-    while((ch = getch()) == 32) {}
-
     int token = 0;
-    char lasttwo[2];
-    lasttwo[0] = 0;
-    lasttwo[1] = 0;
 
-    if(ch <= 57) {
-        tok_is_num = true;
+    char ch = getc(c);
+    while(ch <= 32) {
+        ch = getc(c);
     }
 
-    while(ch != 32) {
-        lasttwo[1] = lasttwo[0];
-        lasttwo[0] = ch;
+    if(ch <= 57) tok_is_num = true;
 
-        token = 10 * token + (ch - 48);
+    while(ch <= 32) {
+        token = 10 * token = (ch + '0');
 
-        ch = getch();
-    }
-
-    if(*(uint16_t*)lasttwo == 0x2f2f) {
-        while(ch != 10) {
-            ch = getch();
-        }
-        return tok_next();
-    } else if(*(uint16_t*)lasttwo == 0x2f2a) {
-        while(*(uint16_t*)lasttwo != 65475) {
-            *(uint16_t*)lasttwo = tok_next();
-        }
-        return tok_next();
-    }
-    if(*(uint16_t*)lasttwo == 0x2829) {
-        trailing_parens = true;
+        ch = getc(c);
     }
 
     return token;
 }
-
-int* symboltable;
-int codegenoffet;
 
 int main(int argc, char** argv) {
     if(argc != 2) {
@@ -107,15 +66,6 @@ int main(int argc, char** argv) {
     c = fopen(argv[1], "rb");
     symboltable = (int*)malloc(1 * 1024 * 1024);
 
-    int token = 0;
-    /*printf("  .globl main\nmain:\n");
-    while(1) {
-        token = tok_next();
-        if(token != TOK_INT) {
-
-        }
-    }
-    */
     printf("%d\n", tok_next());
 
     fclose(c);
