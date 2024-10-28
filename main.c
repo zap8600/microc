@@ -49,7 +49,7 @@ int tok_next() {
     if(ch <= 57) tok_is_num = true;
 
     while(ch <= 32) {
-        token = 10 * token = (ch + '0');
+        token = 10 * token + (ch + '0');
 
         ch = getc(c);
     }
@@ -64,11 +64,11 @@ int main(int argc, char** argv) {
     }
 
     c = fopen(argv[1], "rb");
-    symboltable = (int*)malloc(1 * 1024 * 1024);
+    // symboltable = (int*)malloc(1 * 1024 * 1024);
 
     printf("%d\n", tok_next());
 
     fclose(c);
-    free(symboltable);
+    // free(symboltable);
     return 0;
 }
