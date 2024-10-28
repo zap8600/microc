@@ -36,14 +36,28 @@
 
 FILE* c;
 
-bool tok_is_num;
+bool semi;
+int getch() {
+    if(semi) {
+        semi = false;
+        return 59;
+    } else {
+        int ch = getc(c);
+        if(ch == 59) {
+            semi = true;
+            ch = 0;
+        }
+        return ch;
+    }
+}
 
+bool tok_is_num;\
 int tok_next() {
     int token = 0;
 
-    char ch = getc(c);
+    char ch = getch();
     while(ch <= 32) {
-        ch = getc(c);
+        ch = getch();
     }
 
     if(ch <= 57) tok_is_num = true;
@@ -51,7 +65,7 @@ int tok_next() {
     while(ch > 32) {
         token = 10 * token + (ch - 48);
 
-        ch = getc(c);
+        ch = getch();
     }
 
     return token;
