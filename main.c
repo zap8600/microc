@@ -51,7 +51,6 @@ char getch() {
 
 bool tok_is_num;
 bool tok_is_call;
-bool trailing_parens;
 
 int tok_next() {
     char ch = getch();
@@ -93,16 +92,30 @@ int tok_next() {
     return token;
 }
 
+int* symboltable;
+int codegenoffet;
+
 int main(int argc, char** argv) {
     if(argc != 2) {
-        fprintf(stderr, "Usage: %s [C file]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [C file]", argv[0]);
         return -1;
     }
 
     c = fopen(argv[1], "rb");
+    symboltable = (int*)malloc(1 * 1024 * 1024);
 
-    
+    int token = 0;
+    /*printf("  .globl main\nmain:\n");
+    while(1) {
+        token = tok_next();
+        if(token != TOK_INT) {
+
+        }
+    }
+    */
+    printf("%d\n", tok_next());
 
     fclose(c);
+    free(symboltable);
     return 0;
 }
