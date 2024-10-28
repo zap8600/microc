@@ -38,12 +38,13 @@ FILE* c;
 
 bool semicolon;
 char getch() {
-    char ch;
+    int ch;
     if(semicolon) {
         semicolon = false;
         ch = 59;
+        return (char)ch;
     }
-    int ch = getc(c); // TODO: Expand subset, as this is incompatible with this subset of C, meaning the compiler can't compile itself.
+    ch = getc(c); // TODO: Expand subset, as this is incompatible with this subset of C, meaning the compiler can't compile itself.
     if(ch == 59) {
         semicolon = true;
         ch = 0;
