@@ -87,9 +87,18 @@ int main(int argc, char** argv) {
 
     while(1) {
         int token = tok_next();
+        int token1;
         if(token != TOK_INT) {
             savedtok = token;
-            
+            if(tok_is_num) {
+                // Compile var
+                // Emit
+                token = token + token;
+                // Emit token value
+            } else {
+                //
+            }
+            token = tok_next();
         } else {
             tok_next();
             continue;
