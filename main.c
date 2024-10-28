@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define TOK_INT 6388
 #define TOK_VOID 11386
@@ -37,6 +38,7 @@ FILE* c;
 
 bool semicolon;
 char getch() {
+    char ch;
     if(semicolon) {
         semicolon = false;
         ch = 59;
@@ -69,7 +71,7 @@ int tok_next() {
         lasttwo[1] = lasttwo[0];
         lasttwo[0] = ch;
 
-        token = 10 * token + (c - 48);
+        token = 10 * token + (ch - 48);
 
         ch = getch();
     }
