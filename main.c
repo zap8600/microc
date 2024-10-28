@@ -48,8 +48,8 @@ int tok_next() {
 
     if(ch <= 57) tok_is_num = true;
 
-    while(ch <= 32) {
-        token = 10 * token + (ch - '0');
+    while(ch > 32) {
+        token = 10 * token + (ch - 48);
 
         ch = getc(c);
     }
