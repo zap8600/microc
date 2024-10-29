@@ -54,9 +54,12 @@ int getch() {
 }
 
 bool tok_is_num;
+bool tok_is_call;
 int tok_next() {
     int token = 0;
+    char lasttwo[0];
     tok_is_num = false;
+    tok_is_call = false;
 
     char ch = getch();
     while(ch <= 32) {
@@ -67,12 +70,121 @@ int tok_next() {
     if(ch <= 57) tok_is_num = true;
 
     while(ch > 32) {
+        lasttwo[1] = lasttwo[0];
+        lasttwo[0] = ch;
+
         token = 10 * token + (ch - 48);
 
         ch = getch();
     }
 
+    if((*(uint16_t*)lasttwo) == 0x2f2f) {
+        while(ch != 10) {
+            ch = getch();
+        }
+        return tok_next();
+    } else if((*(uint16_t*)lasttwo) == 0x2f2a) {
+        int ttoken = 0;
+        while(ttoken != 65475) {
+            ttoken = tok_next();
+        }
+        return tok_next();
+    }
+    if((*(uint16_t*)lasttwo) == 0x2829) {
+        tok_is_call = true;
+    }
+
     return token;
+}
+
+void compile_stmts(const int ttoken);
+
+void control_flow_block() {
+    int token = tok_next();
+    compile_expr(token);
+
+    printf("test ax,ax\n");
+    printf("je ");
+    printf("placeholder\n");
+
+    // Save forward patch location
+    token = tok_next();
+    compile_stmts(token);
+    // Restore forward patch location
+}
+
+void patch_fwd() {
+    // Compute forward jump
+}
+
+void patch_back(int loopstartloc) {
+    printf("jmp ");
+    printf("placeholder\n");
+    patch_fwd();
+}
+
+void compile_stmts(const int ttoken) {
+    int token = ttoken;
+    while(1) {
+        if(token == TOK_BLK_END) {
+            return;
+        }
+
+        if(!tok_is_call) {
+            if(token != TOK_ASM) {
+                if(token != TOK_IF_BEGIN) {
+                    if(token != TOK_WHILE_BEGIN) {
+                        compile_assign();
+                    } else {
+                        // Save loop start location
+                        control_flow_block();
+                        patch_back();
+                        token = tok_next();
+                    }
+                } else {
+                    control_flow_block();
+                    patch_fwd();
+                    token = tok_next();
+                }
+            } else {
+                token = tok_next();
+                printf("%d\n", token);
+                tok_next();
+                token = tok_next();
+            }
+        } else {
+            printf("call ");
+            // Get target from symbol table
+            printf("placeholder\n");
+
+            tok_next();
+            token = tok_next();
+        }
+    }
+}
+
+void compile_function() {
+    int token = tok_next();
+    // Save function name in a symbol table
+    tok_next();
+    token = tok_next();
+    compile_stmts(token);
+
+    printf("ret\n");
+}
+
+void compile() {
+    int token = 0;
+    while(token != EOF) {
+        token = tok_next();
+        if(token != TOK_INT) {
+            compile_function();
+            if(token == TOK_START) return;
+        } else {
+            tok_next();
+            tok_next();
+        }
+    }
 }
 
 int main(int argc, char** argv) {
@@ -81,17 +193,12 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    //c = fopen(argv[1], "rb");
+    c = fopen(argv[1], "rb");
 
     printf("  .globl main\nmain:\n");
-    int token = 0;
-    while(token != EOF) {
-        token = tok_next();
-        if(tok_is_num) {
-            //
-        }
-    }
 
-    //fclose(c);
+    compile();
+
+    fclose(c);
     return 0;
 }
