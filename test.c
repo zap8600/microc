@@ -1,1 +1,1 @@
-int tmp;
+int a = 5; return a;

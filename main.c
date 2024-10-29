@@ -73,18 +73,18 @@ int tok_next() {
     return token;
 }
 
-void emit(int token) {
-    printf("%d\n", token);
+void emit(const char *s) {
+    printf("%s\n", s);
 }
 
 int compile_unary(int token) {
-    // Save token
     if(tok_is_num) {
-        emit(token); // Emit
+        emit("mox ax, imm\n"); // Emit
     } else {
+        emit("mov ax, [imm]\n");
         token = token + token;
     }
-    emit(token); // Emit token value
+    printf("%d\n", token); // Emit token value
     return tok_next();
 }
 
@@ -104,15 +104,16 @@ int main(int argc, char** argv) {
         int token = tok_next();
         if(token != TOK_INT) {
             if(token == TOK_RET) {
-                // Should return a value, however return isn't a thing in sectorc, so I'm writing myself.
+                // Should return a value, however return isn't a thing in sectorc, so I'm writing it myself.
                 token = tok_next();
                 if(tok_is_num) {
-                    emit(token); // Emit
+                    emit("mox ax, imm\n"); // Emit
                 } else {
+                    emit("mov ax, [imm]\n");
                     token = token + token;
                 }
-                emit(token); // Emit token value
-                emit(TOK_RET);
+                printf("%d\n", token); // Emit token value
+                printf("%d\n", TOK_RET);
                 break;
             }
             savedtok = token;
@@ -121,14 +122,14 @@ int main(int argc, char** argv) {
             token = compile_unary(token);
             int op;
             switch(token) {
-                case TOK_ADD: break; // Token is add
-                case TOK_SUB: break; // Token is sub
-                case TOK_MUL: break; // Token is mul
-                case TOK_AND: break; // Token is and
-                case TOK_OR: break; // Token is or
-                case TOK_XOR: break; // Token is xor
-                case TOK_SHL: break; // Token is shift left
-                case TOK_SHR: break; // Token is shift right
+                case TOK_ADD: op = TOK_ADD; break; // Token is add
+                case TOK_SUB: op = TOK_SUB; break; // Token is sub
+                case TOK_MUL: op = TOK_MUL; break; // Token is mul
+                case TOK_AND: op = TOK_AND; break; // Token is and
+                case TOK_OR: op = TOK_OR; break; // Token is or
+                case TOK_XOR: op = TOK_XOR; break; // Token is xor
+                case TOK_SHL: op = TOK_SHL; break; // Token is shift left
+                case TOK_SHR: op = TOK_SHR; break; // Token is shift right
                 /* Don't need these right now.
                 case TOK_EQ: break;
                 case TOK_NE: break;
@@ -139,17 +140,18 @@ int main(int argc, char** argv) {
                 */
                 default: break; // uh oh
             }
-            // Emit
+            emit("push ax\n");
             token = tok_next();
             token = compile_unary(token);
-            // Emit
-            // Emit op
+            emit("pop cx; xchg ax, cx\n");
+            printf("%d\n", op);
             token = savedtok;
-            // Emit
+            emit("mov [imm], ax\n");
             token = token * token;
-            // Emit token value
-            token = tok_next;
+            printf("%d\n", token);
+            token = tok_next();
         } else {
+            tok_next();
             tok_next();
             continue;
         }
