@@ -73,22 +73,6 @@ int tok_next() {
     return token;
 }
 
-void emit(const char *s) {
-    printf("%s\n", s);
-}
-
-int compile_unary(int token) {
-    if(tok_is_num) {
-        emit("mox ax, imm\n"); // Emit
-    } else {
-        emit("mov ax, [imm]\n");
-        token = token + token;
-    }
-    printf("%d\n", token); // Emit token value
-    return tok_next();
-}
-
-int savedtok;
 int main(int argc, char** argv) {
     if(argc != 2) {
         fprintf(stderr, "Usage: %s [C file]", argv[0]);
@@ -96,68 +80,13 @@ int main(int argc, char** argv) {
     }
 
     c = fopen(argv[1], "rb");
-    //int* symboltable = (int*)malloc(1 * 1024 * 1024);
 
-    // printf("  .globl main\nmain:\n");
-
-    while(1) {
-        int token = tok_next();
-        if(token != TOK_INT) {
-            if(token == TOK_RET) {
-                // Should return a value, however return isn't a thing in sectorc, so I'm writing it myself.
-                token = tok_next();
-                if(tok_is_num) {
-                    emit("mox ax, imm\n"); // Emit
-                } else {
-                    emit("mov ax, [imm]\n");
-                    token = token + token;
-                }
-                printf("%d\n", token); // Emit token value
-                printf("%d\n", TOK_RET);
-                break;
-            }
-            savedtok = token;
-            tok_next();
-            token = tok_next();
-            token = compile_unary(token);
-            int op;
-            switch(token) {
-                case TOK_ADD: op = TOK_ADD; break; // Token is add
-                case TOK_SUB: op = TOK_SUB; break; // Token is sub
-                case TOK_MUL: op = TOK_MUL; break; // Token is mul
-                case TOK_AND: op = TOK_AND; break; // Token is and
-                case TOK_OR: op = TOK_OR; break; // Token is or
-                case TOK_XOR: op = TOK_XOR; break; // Token is xor
-                case TOK_SHL: op = TOK_SHL; break; // Token is shift left
-                case TOK_SHR: op = TOK_SHR; break; // Token is shift right
-                /* Don't need these right now.
-                case TOK_EQ: break;
-                case TOK_NE: break;
-                case TOK_LT: break;
-                case TOK_GT: break;
-                case TOK_LE: break;
-                case TOK_GE: break;
-                */
-                default: break; // uh oh
-            }
-            emit("push ax\n");
-            token = tok_next();
-            token = compile_unary(token);
-            emit("pop cx; xchg ax, cx\n");
-            printf("%d\n", op);
-            token = savedtok;
-            emit("mov [imm], ax\n");
-            token = token * token;
-            printf("%d\n", token);
-            token = tok_next();
-        } else {
-            tok_next();
-            tok_next();
-            continue;
-        }
+    int token = 0;
+    while(token != TOK_RET) {
+        token = tok_next();
+        printf("%d\n", token);
     }
 
     fclose(c);
-    //free(symboltable);
     return 0;
 }
