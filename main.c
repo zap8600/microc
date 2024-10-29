@@ -73,6 +73,21 @@ int tok_next() {
     return token;
 }
 
+void emit(int token) {
+    printf("%d\n", token);
+}
+
+int compile_unary(int token) {
+    // Save token
+    if(tok_is_num) {
+        emit(token); // Emit
+    } else {
+        token = token + token;
+    }
+    emit(token); // Emit token value
+    return tok_next();
+}
+
 int savedtok;
 int main(int argc, char** argv) {
     if(argc != 2) {
@@ -81,24 +96,59 @@ int main(int argc, char** argv) {
     }
 
     c = fopen(argv[1], "rb");
-    int* symboltable = (int*)malloc(1 * 1024 * 1024);
+    //int* symboltable = (int*)malloc(1 * 1024 * 1024);
 
-    printf("  .globl main\nmain:\n");
+    // printf("  .globl main\nmain:\n");
 
     while(1) {
         int token = tok_next();
-        int token1;
         if(token != TOK_INT) {
-            savedtok = token;
-            if(tok_is_num) {
-                // Compile var
-                // Emit
-                token = token + token;
-                // Emit token value
-            } else {
-                //
+            if(token == TOK_RET) {
+                // Should return a value, however return isn't a thing in sectorc, so I'm writing myself.
+                token = tok_next();
+                if(tok_is_num) {
+                    emit(token); // Emit
+                } else {
+                    token = token + token;
+                }
+                emit(token); // Emit token value
+                emit(TOK_RET);
+                break;
             }
+            savedtok = token;
+            tok_next();
             token = tok_next();
+            token = compile_unary(token);
+            int op;
+            switch(token) {
+                case TOK_ADD: break; // Token is add
+                case TOK_SUB: break; // Token is sub
+                case TOK_MUL: break; // Token is mul
+                case TOK_AND: break; // Token is and
+                case TOK_OR: break; // Token is or
+                case TOK_XOR: break; // Token is xor
+                case TOK_SHL: break; // Token is shift left
+                case TOK_SHR: break; // Token is shift right
+                /* Don't need these right now.
+                case TOK_EQ: break;
+                case TOK_NE: break;
+                case TOK_LT: break;
+                case TOK_GT: break;
+                case TOK_LE: break;
+                case TOK_GE: break;
+                */
+                default: break; // uh oh
+            }
+            // Emit
+            token = tok_next();
+            token = compile_unary(token);
+            // Emit
+            // Emit op
+            token = savedtok;
+            // Emit
+            token = token * token;
+            // Emit token value
+            token = tok_next;
         } else {
             tok_next();
             continue;
@@ -106,6 +156,6 @@ int main(int argc, char** argv) {
     }
 
     fclose(c);
-    free(symboltable);
+    //free(symboltable);
     return 0;
 }
