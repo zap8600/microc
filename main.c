@@ -56,10 +56,12 @@ int getch() {
 bool tok_is_num;
 int tok_next() {
     int token = 0;
+    tok_is_num = false;
 
     char ch = getch();
     while(ch <= 32) {
         ch = getch();
+        if(ch == EOF) return ch;
     }
 
     if(ch <= 57) tok_is_num = true;
@@ -79,14 +81,17 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    c = fopen(argv[1], "rb");
+    //c = fopen(argv[1], "rb");
 
+    printf("  .globl main\nmain:\n");
     int token = 0;
-    while(token != TOK_RET) {
+    while(token != EOF) {
         token = tok_next();
-        printf("%d\n", token);
+        if(tok_is_num) {
+            //
+        }
     }
 
-    fclose(c);
+    //fclose(c);
     return 0;
 }
