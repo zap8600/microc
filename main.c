@@ -57,14 +57,13 @@ bool tok_is_num;
 bool tok_is_call;
 int tok_next() {
     int token = 0;
-    int lasttwo[0];
+    char lasttwo[2];
     tok_is_num = false;
     tok_is_call = false;
 
-    int ch = getch();
+    char ch = getch();
     while(ch <= 32) {
         ch = getch();
-        if(ch == EOF) return ch;
     }
 
     if(ch <= 57) tok_is_num = true;
