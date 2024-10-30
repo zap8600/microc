@@ -197,7 +197,12 @@ int main(int argc, char** argv) {
 
     printf("  .globl main\nmain:\n");
 
-    compile();
+    //compile();
+    int token = 0;
+    while(token != TOK_SEMI) {
+        token = tok_next();
+        printf("%d\n", token);
+    }
 
     fclose(c);
     return 0;
