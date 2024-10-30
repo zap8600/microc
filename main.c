@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
 
     //compile();
     int token = 0;
-    while(token != EOF) {
+    while(token != TOK_SEMI) {
         token = tok_next();
         printf("%d\n", token);
     }
