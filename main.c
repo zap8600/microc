@@ -11,7 +11,7 @@
 #define TOK_LPAREN 65528
 #define TOK_RPAREN 65529
 #define TOK_START 20697
-#define TOK_DEREF 64653
+#define TOK_DEREF -6161267 // 64653 doesn't work here. I wonder why it works in sectorc then.
 #define TOK_WHILE_BEGIN 55810
 #define TOK_IF_BEGIN 6232
 #define TOK_BODY_BEGIN 5
@@ -96,96 +96,6 @@ int tok_next() {
     return token;
 }
 
-void compile_stmts(const int ttoken);
-
-void control_flow_block() {
-    int token = tok_next();
-    //compile_expr(token);
-
-    printf("test ax,ax\n");
-    printf("je ");
-    printf("placeholder\n");
-
-    // Save forward patch location
-    token = tok_next();
-    compile_stmts(token);
-    // Restore forward patch location
-}
-
-void patch_fwd() {
-    // Compute forward jump
-}
-
-void patch_back(int loopstartloc) {
-    printf("jmp ");
-    printf("%d\n", loopstartloc);
-    patch_fwd();
-}
-
-void compile_stmts(const int ttoken) {
-    int token = ttoken;
-    while(1) {
-        if(token == TOK_BLK_END) {
-            return;
-        }
-
-        if(!tok_is_call) {
-            if(token != TOK_ASM) {
-                if(token != TOK_IF_BEGIN) {
-                    if(token != TOK_WHILE_BEGIN) {
-                        //compile_assign();
-                    } else {
-                        // Save loop start location
-                        control_flow_block();
-                        patch_back(0); // 0 is being used as a placeholder
-                        token = tok_next();
-                    }
-                } else {
-                    control_flow_block();
-                    patch_fwd();
-                    token = tok_next();
-                }
-            } else {
-                token = tok_next();
-                printf("%d\n", token);
-                tok_next();
-                token = tok_next();
-            }
-        } else {
-            printf("call ");
-            // Get target from symbol table
-            printf("placeholder\n");
-
-            tok_next();
-            token = tok_next();
-        }
-    }
-}
-
-void compile_function() {
-    int token = tok_next();
-    // Save function name in a symbol table
-    tok_next();
-    token = tok_next();
-    compile_stmts(token);
-
-    printf("ret\n");
-}
-
-void compile() {
-    int token = 0;
-    while(token != EOF) {
-        token = tok_next();
-        if(token != TOK_INT) {
-            compile_function();
-            if(token == TOK_START) return;
-        } else {
-            tok_next();
-            tok_next();
-        }
-    }
-}
-
 int main(int argc, char** argv) {
     if(argc != 2) {
         fprintf(stderr, "Usage: %s [C file]", argv[0]);
@@ -194,14 +104,7 @@ int main(int argc, char** argv) {
 
     c = fopen(argv[1], "rb");
 
-    printf("  .globl main\nmain:\n");
-
-    //compile();
-    int token = 0;
-    while(token != TOK_SEMI) {
-        token = tok_next();
-        printf("%d\n", token);
-    }
+    
 
     fclose(c);
     return 0;
