@@ -138,7 +138,7 @@ void compile_stmts(const int ttoken) {
                     } else {
                         // Save loop start location
                         control_flow_block();
-                        patch_back();
+                        patch_back(0); // 0 is being used as a placeholder
                         token = tok_next();
                     }
                 } else {
