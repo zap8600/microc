@@ -96,7 +96,7 @@ int tok_next() {
 }
 
 int compile_unary(const int ttoken) {
-    int tokenn = ttoken;
+    int token = ttoken;
     if(tok_is_num) {
         printf("    mov ax,imm ");
     } else {
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
                 if(op != 0) {
                     printf("    push ax;\n");
                     token = tok_next();
-                    token = compile_unary();
+                    token = compile_unary(token);
                     printf("    pop cx;\n    xchg ax,cx;\n");
                     switch(op) {
                         case TOK_ADD: printf("    add ax,cx;\n");
