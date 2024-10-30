@@ -3,38 +3,37 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+// Some of these values won't work in my compiler, since they used wrapping on 16-bit integers, while I'm using 32-bit integers
 #define TOK_INT 6388
-#define TOK_VOID 11386
+#define TOK_VOID // 11386 doesn't work here.
 #define TOK_ASM 5631
 #define TOK_COMM 65532
 #define TOK_SEMI 11
-#define TOK_LPAREN 65528
-#define TOK_RPAREN 65529
-#define TOK_START 20697
-#define TOK_DEREF -6161267 // 64653 doesn't work here. I wonder why it works in sectorc then.
+#define TOK_LPAREN -8 // 65528 doesn't work here.
+#define TOK_RPAREN -7 // 65529 doesn't work here.
+#define TOK_START 544362713 // 20697 doesn't work here.
+#define TOK_DEREF -6161267 // 64653 doesn't work here.
 #define TOK_WHILE_BEGIN 55810
 #define TOK_IF_BEGIN 6232
 #define TOK_BODY_BEGIN 5
 #define TOK_BLK_BEGIN 75
 #define TOK_BLK_END 77
 #define TOK_ASSIGN 13
-#define TOK_ADDR 65526
-#define TOK_SUB 65533
-#define TOK_ADD 65531
-#define TOK_MUL 65530
-#define TOK_AND 65526
+#define TOK_ADDR -10 // 65526 doesn't work here.
+#define TOK_SUB -3 // 65533 doesn't work here.
+#define TOK_ADD -5 // 65531 doesn't work here.
+#define TOK_MUL -6 // 65530 doesn't work here.
+#define TOK_AND -10 // 65526 doesn't work here.
 #define TOK_OR 76
 #define TOK_XOR 46
 #define TOK_SHL 132
 #define TOK_SHR 154
 #define TOK_EQ 143
-#define TOK_NE 65399
+#define TOK_NE -137 // 65399 doesn't work here.
 #define TOK_LT 12
 #define TOK_GT 14
 #define TOK_LE 133
 #define TOK_GE 153
-
-#define TOK_RET 7205622
 
 FILE* c;
 
@@ -96,6 +95,18 @@ int tok_next() {
     return token;
 }
 
+int compile_unary(const int ttoken) {
+    int tokenn = ttoken;
+    if(tok_is_num) {
+        printf("    mov ax,imm ");
+    } else {
+        printf("    mov ax,[imm] ");
+        token *= 2;
+    }
+    printf("%u;\n", token);
+    return tok_next();
+}
+
 int functionname;
 int dest;
 int main(int argc, char** argv) {
@@ -107,23 +118,51 @@ int main(int argc, char** argv) {
     c = fopen(argv[1], "rb");
 
     int token = 0;
-    while(token != TOK_START) {
+    while(1) {
         token = tok_next();
         if(token != TOK_INT) {
             token = tok_next();
             functionname = token;
-            printf("void %u() {\n", functionname);
+            printf("void %d() {\n", functionname);
             tok_next();
             token = tok_next();
             while(token != TOK_BLK_END) {
                 dest = token;
                 tok_next();
-                tok_next();
+                token = tok_next();
+                token = compile_unary(token);
+                int op = 0;
+                switch(token) {
+                    case TOK_ADD: op = TOK_ADD; break;
+                    default: break; // TODO: Add other operators
+                }
+
+                if(op != 0) {
+                    printf("    push ax;\n");
+                    token = tok_next();
+                    token = compile_unary();
+                    printf("    pop cx;\n    xchg ax,cx;\n");
+                    switch(op) {
+                        case TOK_ADD: printf("    add ax,cx;\n");
+                    }
+                }
+
+                token = dest;
+                printf("    mov [imm],ax ");
+                token *= 2;
+                printf("%d;\n", token);
+
+                token = tok_next();
+            }
+            printf("    return;\n}\n\n");
+            token = functionname;
+            if(token == TOK_START) {
+                break;
             }
         } else {
             printf("int ");
             token = tok_next();
-            printf("%u;\n", token);
+            printf("%d;\n", token);
             tok_next();
         }
     }
