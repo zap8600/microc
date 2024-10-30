@@ -57,11 +57,11 @@ bool tok_is_num;
 bool tok_is_call;
 int tok_next() {
     int token = 0;
-    char lasttwo[0];
+    int lasttwo[0];
     tok_is_num = false;
     tok_is_call = false;
 
-    char ch = getch();
+    int ch = getch();
     while(ch <= 32) {
         ch = getch();
         if(ch == EOF) return ch;
@@ -101,7 +101,7 @@ void compile_stmts(const int ttoken);
 
 void control_flow_block() {
     int token = tok_next();
-    compile_expr(token);
+    //compile_expr(token);
 
     printf("test ax,ax\n");
     printf("je ");
@@ -119,7 +119,7 @@ void patch_fwd() {
 
 void patch_back(int loopstartloc) {
     printf("jmp ");
-    printf("placeholder\n");
+    printf("%d\n", loopstartloc);
     patch_fwd();
 }
 
@@ -134,7 +134,7 @@ void compile_stmts(const int ttoken) {
             if(token != TOK_ASM) {
                 if(token != TOK_IF_BEGIN) {
                     if(token != TOK_WHILE_BEGIN) {
-                        compile_assign();
+                        //compile_assign();
                     } else {
                         // Save loop start location
                         control_flow_block();
