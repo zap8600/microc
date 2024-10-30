@@ -96,6 +96,8 @@ int tok_next() {
     return token;
 }
 
+int functionname;
+int dest;
 int main(int argc, char** argv) {
     if(argc != 2) {
         fprintf(stderr, "Usage: %s [C file]", argv[0]);
@@ -104,7 +106,27 @@ int main(int argc, char** argv) {
 
     c = fopen(argv[1], "rb");
 
-    
+    int token = 0;
+    while(token != TOK_START) {
+        token = tok_next();
+        if(token != TOK_INT) {
+            token = tok_next();
+            functionname = token;
+            printf("void %u() {\n", functionname);
+            tok_next();
+            token = tok_next();
+            while(token != TOK_BLK_END) {
+                dest = token;
+                tok_next();
+                tok_next();
+            }
+        } else {
+            printf("int ");
+            token = tok_next();
+            printf("%u;\n", token);
+            tok_next();
+        }
+    }
 
     fclose(c);
     return 0;
