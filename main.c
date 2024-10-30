@@ -130,7 +130,10 @@ int compile_assign(const int ttoken) {
         token = compile_unary(token);
         printf("    pop cx;\n    xchg ax,cx;\n");
         switch(op) {
-            case TOK_ADD: printf("    add ax,cx;\n");
+            case TOK_ADD: printf("    add ax,cx;\n"); break;
+            case TOK_SUB: printf("    sub ax,cx;\n"); break;
+            case TOK_EQ: printf("    cmp ax,cx;\n    mov ax,0x00;\n    sete al;\n"); break;
+            case TOK_NE: printf("    cmp ax,cx;\n    mov ax,0x00;\n    setne al;\n"); break;
         }
     }
 
