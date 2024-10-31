@@ -102,7 +102,7 @@ int compile_unary(const int ttoken) {
         printf("    mov ax,imm ");
     } else {
         printf("    mov ax,[imm] ");
-        token *= 4; // Originally 2 in sectorc, now 4 for 32-bit systems
+        token *= 2; // This should change based on the architecture. It is 2 for a 16-bit systen
     }
     printf("%u;\n", token);
     return tok_next();
@@ -147,7 +147,7 @@ int compile_assign(const int ttoken) {
 
 int functionname;
 int main(int argc, char** argv) {
-    if(argc != 3) {
+    if(argc != 2) {
         fprintf(stderr, "Usage: %s [C file]", argv[0]);
         return -1;
     }
