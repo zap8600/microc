@@ -36,6 +36,8 @@
 #define TOK_LE 133
 #define TOK_GE 153
 
+const uint8_t elfheader[16] = {0x7F, 'E', 'L', 'F', 0xE0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
 FILE* c;
 FILE* datatmp;
 FILE* texttmp;
@@ -150,12 +152,15 @@ int compile_assign(const int ttoken) {
 
 int functionname;
 int main(int argc, char** argv) {
-    if(argc != 2) {
-        fprintf(stderr, "Usage: %s [C file]", argv[0]);
+    if(argc != 3) {
+        fprintf(stderr, "Usage: %s [C file] [Output executable]\n", argv[0]);
         return -1;
     }
 
     c = fopen(argv[1], "rb");
+    datatmp = fopen("./datatmp", "wb"); // I'm using files for these to use as little RAM right now. I'd like this to be usable on an embedded processor.
+    texttmp = fopen("./texttmp", "wb");
+    out = fopen(argv[2]);
 
     int token = 0;
     while(1) {
@@ -182,6 +187,11 @@ int main(int argc, char** argv) {
         }
     }
 
+    fwrite(elfheader, 4, 1, out);
+
     fclose(c);
+    fclose(datatmp);
+    fclose(texttmp);
+    fclose(out);
     return 0;
 }
