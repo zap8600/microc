@@ -37,6 +37,9 @@
 #define TOK_GE 153
 
 FILE* c;
+FILE* datatmp;
+FILE* texttmp;
+FILE* out;
 
 bool semi;
 int getch() {
