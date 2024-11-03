@@ -41,6 +41,14 @@ const uint8_t textheader[56] = {0x01, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 
 const uint8_t dataheader[56] = {0x01, 0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 const uint8_t movqinst[2] = {0x48, 0xb8};
+const uint8_t rbxsetupinst[2] = {0x48, 0xbb};
+const uint8_t getvarinst[3] = {0x48, 0x8b, 0x03};
+const uint8_t savraxinst = 0x50;
+const uint8_t returncxinst = 0x59;
+const uint8_t swapinst[2] = {0x48, 0x91};
+
+const uint8_t addinst[3] = {0x48, 0x01, 0xc8};
+const uint8_t subinst[3] = {0x48, 0x29, 0xc8};
 
 FILE* c;
 FILE* datatmp;
@@ -114,18 +122,33 @@ uint64_t byterev64(const uint64_t bytes) {
 uint64_t compile_unary(const uint64_t ttoken) {
     uint64_t token = ttoken;
     if(tok_is_num) {
-        printf("    mov ax,imm ");
+        printf("    mov rax,imm ");
         fwrite(movqinst, 2, 1, texttmp);
         uint64_t tmp = byterev64(token);
         fwrite(&tmp, 8, 1, texttmp);
     } else {
-        printf("    mov ax,[imm] ");
-        uint64_t datacur = ftell(datatmp);
+        printf("    mov rbx,imm\n    mov rax,[rbx] ");
         fseek(datatmp, 0, SEEK_SET);
-        for(uint64_t i = 0; i < dataamt; i++) {
-            //
+        uint64_t i;
+        while(i != (dataamt + 1)) {
+            uint64_t var;
+            fread(&var, 8, 1, datatmp);
+            if(var == token) break;
+            i++;
         }
-        token *= 2; // This should change based on the architecture. It is 2 for a 16-bit systen
+        if(i > dataamt) { // Sucks to suck
+            fprintf(stderr, "Error: variable hasn't been defined yet!\n");
+            fclose(c);
+            fclose(texttmp);
+            fclose(datatmp);
+            fclose(out);
+            exit(-1);
+        }
+        fseek(datatmp, 0, SEEK_END);
+        fwrite(rbxsetupinst, 2, 1, texttmp);
+        uint64_t tmp = byterev64(token);
+        fwrite(&tmp, 8, 1, texttmp);
+        fwrite(getvarinst, 3, 1, texttmp);
     }
     printf("%u;\n", token);
     return tok_next();
@@ -146,13 +169,16 @@ uint64_t compile_assign(const uint64_t ttoken) {
     }
 
     if(op != 0) {
-        printf("    push ax;\n");
+        printf("    push rax;\n");
+        fwrite(&savraxinst, 1, 1, texttmp);
         token = tok_next();
         token = compile_unary(token);
         printf("    pop cx;\n    xchg ax,cx;\n");
+        fwrite(&returncxinst, 1, 1, texttmp);
+        fwrite(swapinst, 2, 1, texttmp);
         switch(op) {
-            case TOK_ADD: printf("    add ax,cx;\n"); break;
-            case TOK_SUB: printf("    sub ax,cx;\n"); break;
+            case TOK_ADD: printf("    add ax,cx;\n"); fwrite(&addinst, 3, 1, texttmp); break;
+            case TOK_SUB: printf("    sub ax,cx;\n"); fwrite(&subinst, 3, 1, texttmp); break;
         }
     }
 
