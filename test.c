@@ -1,11 +1,3 @@
-/*
-Makes a good test to see if comments are supported by my tokenizer too.
-tmp1 should have no offset.
-tmp2 should have an offset of 8.
-tmp3 should have an offset of 16.
-tmp4 should have an offset of 24.
-tmp5 should have an offset of 32.
-*/
 int tmp1;
 int tmp2;
 int tmp3;
