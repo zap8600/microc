@@ -134,7 +134,7 @@ uint32_t compile_unary(const uint32_t ttoken) {
     } else {
         printf("    mov ebx,imm\n    mov eax,[ebx] ");
         fseek(datatmp, 0, SEEK_SET);
-        uint32_t i;
+        uint32_t i = 0;
         while(i <= dataamt) {
             uint32_t var;
             fread(&var, 4, 1, datatmp);
