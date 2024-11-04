@@ -51,9 +51,15 @@ const uint8_t returnecxinst = 0x59;
 const uint8_t swapinst = 0x91;
 const uint8_t savevarinst[2] = {0x89, 0x03};
 const uint8_t returninst = 0xc3;
+const uint8_t addtoebxinst[2] = {0x81, 0xc3};
+const uint8_t subtoebxinst[2] = {0x81, 0xeb};
+const uint8_t prologue[6] = {0x55, 0x89, 0xe5, 0x83, 0xec, 0x04};
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
+
+
+const uint8_t padding;
 
 FILE* c;
 FILE* datatmp;
@@ -135,8 +141,9 @@ uint8_t alignbytes(const uint8_t bbytes) {
     return bytes;
 }
 
-uint32_t getnewdatapos() {
-    return (alignbytes((uint8_t)ftell(texttmp)) << 24) | (0x800408);
+uint32_t getnewdatapos(const uint8_t bytes) {
+    // return (alignbytes(bytes) << 24) | (0x800408);
+    return (bytes << 24) | (0x800408);
 }
 
 uint32_t compile_unary(const uint32_t ttoken) {
@@ -147,7 +154,7 @@ uint32_t compile_unary(const uint32_t ttoken) {
         //uint32_t tmp = byterev32(token);
         fwrite(&token, 4, 1, texttmp);
     } else {
-        printf("    mov ebx,imm\n    mov eax,[ebx] ");
+        printf("    add ebx,imm\n    mov eax,[ebx]\n    sub ebx,imm ");
         fseek(datatmp, 0, SEEK_SET);
         uint32_t i = 0;
         while(i <= dataamt) {
@@ -165,10 +172,12 @@ uint32_t compile_unary(const uint32_t ttoken) {
             exit(1);
         }
         fseek(datatmp, 0, SEEK_END);
-        fwrite(&ebxsetupinst, 1, 1, texttmp);
-        uint32_t tmp = 2759853064 + (i * 4); // Need to add .data address to the token
+        fwrite(addtoebxinst, 2, 1, texttmp);
+        uint32_t tmp = i * 4; // Need to add .data address to the token
         fwrite(&tmp, 4, 1, texttmp);
         fwrite(getvarinst, 2, 1, texttmp);
+        fwrite(subtoebxinst, 2, 1, texttmp);
+        fwrite(&tmp, 4, 1, texttmp);
     }
     printf("%u;\n", token);
     return tok_next();
@@ -203,7 +212,7 @@ uint32_t compile_assign(const uint32_t ttoken) {
     }
 
     token = dest;
-    printf("    mov ebx,imm\n    mov [ebx],eax ");
+    printf("    add ebx,imm\n    mov [ebx],eax\n    sub ebx,imm");
     fseek(datatmp, 0, SEEK_SET);
     uint32_t i = 0;
     while(i <= dataamt) {
@@ -221,10 +230,12 @@ uint32_t compile_assign(const uint32_t ttoken) {
         exit(1);
     }
     fseek(datatmp, 0, SEEK_END);
-    fwrite(&ebxsetupinst, 1, 1, texttmp);
-    uint32_t tmp = 2759853064 + (i * 4);
+    fwrite(addtoebxinst, 2, 1, texttmp);
+    uint32_t tmp = i * 4;
     fwrite(&tmp, 4, 1, texttmp);
     fwrite(savevarinst, 2, 1, texttmp);
+    fwrite(subtoebxinst, 2, 1, texttmp);
+    fwrite(&tmp, 4, 1, texttmp);
     printf("%u;\n", i);
 
     return tok_next();
@@ -242,12 +253,15 @@ int main(int argc, char** argv) {
     texttmp = fopen("./texttmp", "wb+");
     out = fopen(argv[2], "wb");
 
-    /* At the moment, the stack pointer only needs 8 bytes for rax when doing operations on variables.
+    /* At the moment, the stack pointer only needs 4 bytes for eax when doing operations on variables.
     It'll need more sixe for local variables in the future, but for now we can keep code size down.
     Besides, the generated code from this will be insanely unoptimized. Setting rbx to an address is 10 bytes.
     I know there are optimizations I could make, but right now, I just want the basics. */
 
-    // TODO: Write a prologue for the stack pointer to be set up.
+    fwrite(prologue, 6, 1, texttmp);
+
+    fwrite(&ebxsetupinst, 1, 1, texttmp);
+    fwrite(&padding, 1, 4, texttmp);
 
     uint32_t token = 0;
     while(1) {
@@ -280,7 +294,6 @@ int main(int argc, char** argv) {
     fwrite(elfheader, 52, 1, out);
     fwrite(textheader, 32, 1, out);
     fwrite(dataheader, 32, 1, out);
-    uint8_t padding = 0;
     printf("At 0x%x in ELF file.\n", ftell(out));
     fwrite(&padding, 1, 12, out);
     printf("At 0x%x in ELF file.\n", ftell(out));
@@ -288,6 +301,9 @@ int main(int argc, char** argv) {
     fseek(texttmp, 0, SEEK_END);
     uint32_t textlen = ftell(texttmp);
     fseek(texttmp, 0, SEEK_SET);
+
+    fseek(datatmp, 0, SEEK_END);
+    uint32_t datalen = ftell(datatmp);
 
     for(uint32_t i = 0; i < textlen; i++) {
         uint8_t code;
@@ -303,9 +319,20 @@ int main(int argc, char** argv) {
         }
     }
 
+    fseek(out, 0x88, SEEK_SET);
+    uint32_t tmp = getnewdatapos(datapos);
+    fwrite(&tmp, 4, 1, out);
     fseek(out, (52 + 32 + 4), SEEK_SET);
     fwrite(&datapos, 4, 1, out);
+    tmp = byterev32(tmp);
+    fwrite(&tmp, 4, 1, out);
 
+    fseek(out, (52 + 16), SEEK_SET);
+    fwrite(&textlen, 4, 2, out);
+    fseek(out, (52 + 32 + 16), SEEK_SET);
+    fwrite(&datalen, 4, 2, out);
+
+    fseek(out, datapos, SEEK_SET);
     fwrite(&padding, 1, (4 * dataamt), out);
 
     fclose(c);
