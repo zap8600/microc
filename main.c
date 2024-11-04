@@ -138,7 +138,6 @@ uint32_t compile_unary(const uint32_t ttoken) {
         while(i <= dataamt) {
             uint32_t var;
             fread(&var, 4, 1, datatmp);
-            printf("%u, %u\n", i, var);
             if(var == token) break;
             i++;
         }
@@ -195,7 +194,6 @@ uint32_t compile_assign(const uint32_t ttoken) {
     while(i <= dataamt) {
         uint32_t var;
         fread(&var, 4, 1, datatmp);
-        printf("%u, %u\n", i, var);
         if(var == token) break;
         i++;
     }
