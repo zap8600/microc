@@ -129,13 +129,13 @@ uint32_t compile_unary(const uint32_t ttoken) {
     if(tok_is_num) {
         printf("    mov eax,imm ");
         fwrite(&movinst, 1, 1, texttmp);
-        uint32_t tmp = byterev32(token);
-        fwrite(&tmp, 4, 1, texttmp);
+        //uint32_t tmp = byterev32(token);
+        fwrite(&token, 4, 1, texttmp);
     } else {
         printf("    mov ebx,imm\n    mov eax,[ebx] ");
         fseek(datatmp, 0, SEEK_SET);
         uint32_t i;
-        while(i != (dataamt + 1)) {
+        while(i <= dataamt) {
             uint32_t var;
             fread(&var, 4, 1, datatmp);
             if(var == token) break;
@@ -147,11 +147,11 @@ uint32_t compile_unary(const uint32_t ttoken) {
             fclose(texttmp);
             fclose(datatmp);
             fclose(out);
-            exit(-1);
+            exit(1);
         }
         fseek(datatmp, 0, SEEK_END);
         fwrite(&ebxsetupinst, 1, 1, texttmp);
-        uint32_t tmp = byterev32(0xA4800408 + (i * 4)); // Need to add .data address to the token
+        uint32_t tmp = 2759853064 + (i * 4); // Need to add .data address to the token
         fwrite(&tmp, 4, 1, texttmp);
         fwrite(getvarinst, 2, 1, texttmp);
     }
@@ -194,7 +194,9 @@ uint32_t compile_assign(const uint32_t ttoken) {
     while(i <= dataamt) {
         uint32_t var;
         fread(&var, 4, 1, datatmp);
-        if(var == token) break;
+        if(var == token) {
+            break;
+        }
         i++;
     }
     if(i > dataamt) { // Sucks to suck
@@ -203,11 +205,11 @@ uint32_t compile_assign(const uint32_t ttoken) {
         fclose(texttmp);
         fclose(datatmp);
         fclose(out);
-        exit(-1);
+        exit(1);
     }
     fseek(datatmp, 0, SEEK_END);
     fwrite(&ebxsetupinst, 1, 1, texttmp);
-    uint32_t tmp = byterev32(0xA4800408 + (i * 4));
+    uint32_t tmp = 2759853064 + (i * 4);
     fwrite(&tmp, 4, 1, texttmp);
     fwrite(savevarinst, 2, 1, texttmp);
     printf("%u;\n", i);
