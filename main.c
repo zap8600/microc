@@ -180,7 +180,7 @@ uint32_t compile_assign(const uint32_t ttoken) {
         token = compile_unary(token);
         printf("    pop ecx;\n    xchg eax,ecx;\n");
         fwrite(&returnecxinst, 1, 1, texttmp);
-        fwrite(swapinst, 2, 1, texttmp);
+        fwrite(&swapinst, 1, 1, texttmp);
         switch(op) {
             case TOK_ADD: printf("    add eax,ecx;\n"); fwrite(addinst, 2, 1, texttmp); break;
             case TOK_SUB: printf("    sub eax,ecx;\n"); fwrite(subinst, 2, 1, texttmp); break;
@@ -256,7 +256,7 @@ int main(int argc, char** argv) {
             printf("int ");
             token = tok_next();
             printf("%d;\n", token);
-            fwrite(token, 4, 1, datatmp);
+            fwrite(&token, 4, 1, datatmp);
             dataamt += 1;
             tok_next();
         }
