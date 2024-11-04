@@ -7,6 +7,6 @@ void _start() {
     tmp1 = 1;
     tmp2 = 4;
     tmp3 = tmp2 + tmp1;
-    tmp4 = 1 + tmp4;
+    tmp4 = 1 + tmp3;
     tmp5 = tmp4 - 1;
 }

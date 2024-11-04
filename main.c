@@ -266,6 +266,7 @@ int main(int argc, char** argv) {
     fwrite(textheader, 32, 1, out);
     fwrite(dataheader, 32, 1, out);
     uint32_t padding = 0;
+    printf("At 0x%x in ELF file.\n", ftell(out));
     fwrite(&padding, 1, 11, out);
     printf("At 0x%x in ELF file.\n", ftell(out));
 
