@@ -191,7 +191,7 @@ uint32_t compile_assign(const uint32_t ttoken) {
     token = dest;
     printf("    mov ebx,imm\n    mov [ebx],eax ");
     fseek(datatmp, 0, SEEK_SET);
-    uint32_t i;
+    uint32_t i = 0;
     while(i <= dataamt) {
         uint32_t var;
         fread(&var, 4, 1, datatmp);
