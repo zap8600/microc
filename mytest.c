@@ -7,7 +7,7 @@ int main() {
     fwrite(&tmp1, 4, 1, test);
     uint32_t tmp2;
     fclose(test);
-    fopen("./testbin", rb);
+    fopen("./testbin", "rb");
     fread(&tmp2, 4, 1, test);
     printf("%u\n", tmp2);
     fclose(test);
