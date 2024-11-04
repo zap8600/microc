@@ -119,9 +119,24 @@ uint32_t tok_next() {
 
     return token;
 }
+
 // 00000000 00000000 11111111 00000000
 uint32_t byterev32(const uint32_t bytes) {
     return ((bytes << 24) | ((bytes & 0xff00) << 8) | ((bytes & 0xff0000) >> 8) | ((bytes & 0xff000000) >> 24));
+}
+
+uint8_t alignbytes(const uint8_t bbytes) {
+    uint8_t bytes = bbytes;
+    if((bytes % 4) != 0) {
+        while((bytes % 4) != 0) {
+            bytes += 1;
+        }
+    }
+    return bytes;
+}
+
+uint32_t getnewdatapos() {
+    return (alignbytes((uint8_t)ftell(texttmp)) << 24) | (0x800408);
 }
 
 uint32_t compile_unary(const uint32_t ttoken) {
@@ -271,22 +286,27 @@ int main(int argc, char** argv) {
     printf("At 0x%x in ELF file.\n", ftell(out));
 
     fseek(texttmp, 0, SEEK_END);
-    uint32_t len = ftell(texttmp);
+    uint32_t textlen = ftell(texttmp);
     fseek(texttmp, 0, SEEK_SET);
 
-    for(uint32_t i = 0; i < len; i++) {
+    for(uint32_t i = 0; i < textlen; i++) {
         uint8_t code;
         fread(&code, 1, 1, texttmp);
         fwrite(&code, 1, 1, out);
     }
 
     uint32_t datapos = ftell(out);
-    if(((datapos + 1) % 4) != 0) {
-        while(((datapos + 1) % 4) != 0) {
+    if((datapos % 4) != 0) {
+        while((datapos % 4) != 0) {
             fwrite(&padding, 1, 1, out);
             datapos = ftell(out);
         }
     }
+
+    fseek(out, (52 + 32 + 4), SEEK_SET);
+    fwrite(&datapos, 4, 1, out);
+
+    fwrite(&padding, 1, (4 * dataamt), out);
 
     fclose(c);
     fclose(datatmp);
