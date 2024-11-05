@@ -55,10 +55,13 @@ const uint8_t addtoebxinst[2] = {0x81, 0xc3};
 const uint8_t subtoebxinst[2] = {0x81, 0xeb};
 const uint8_t prologue[6] = {0x55, 0x89, 0xe5, 0x83, 0xec, 0x04};
 const uint8_t condjumpinst[8] = {0x85, 0xc0, 0x0f, 0x84, 0x00, 0x00, 0x00, 0x00};
+const uint8_t compinst[6] = {0xb8, 0x00, 0x00, 0x00, 0x00, 0x0f};
+const uint8_t terminateinst[9] = {0xb8, 0x3c, 0x00, 0x00, 0x00, 0x6a, 0x00, 0xcd, 0x80};
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
-
+const uint8_t eqinst[2] = {0x94, 0xc0};
+const uint8_t neinst[2] = {0x95, 0xc0};
 
 const uint8_t padding;
 
@@ -180,7 +183,6 @@ uint32_t compile_unary(const uint32_t ttoken) {
         fwrite(subtoebxinst, 2, 1, texttmp);
         fwrite(&tmp, 4, 1, texttmp);
     }
-    printf("%u;\n", token);
     return tok_next();
 }
 
@@ -197,17 +199,16 @@ void compile_expr(const uint32_t ttoken) {
     }
 
     if(op != 0) {
-        printf("    push eax;\n");
         fwrite(&saveaxinst, 1, 1, texttmp);
         token = tok_next();
         token = compile_unary(token);
-        printf("    pop ecx;\n    xchg eax,ecx;\n");
         fwrite(&returnecxinst, 1, 1, texttmp);
         fwrite(&swapinst, 1, 1, texttmp);
         switch(op) {
-            case TOK_ADD: printf("    add eax,ecx;\n"); fwrite(addinst, 2, 1, texttmp); break;
-            case TOK_SUB: printf("    sub eax,ecx;\n"); fwrite(subinst, 2, 1, texttmp); break;
-            case TOK_EQ: break;
+            case TOK_ADD: fwrite(addinst, 2, 1, texttmp); break;
+            case TOK_SUB: fwrite(subinst, 2, 1, texttmp); break;
+            case TOK_EQ: fwrite(compinst, 6, 1, texttmp); fwrite(eqinst, 2, 1, texttmp); break;
+            case TOK_NE: fwrite(compinst, 6, 1, texttmp); fwrite(neinst, 2, 1, texttmp); break;
         }
     }
 }
@@ -220,7 +221,6 @@ uint32_t compile_assign(const uint32_t ttoken) {
     token = tok_next();
     compile_expr(token);
     token = dest;
-    printf("    add ebx,imm\n    mov [ebx],eax\n    sub ebx,imm");
     fseek(datatmp, 0, SEEK_SET);
     uint32_t i = 0;
     while(i <= dataamt) {
@@ -244,9 +244,16 @@ uint32_t compile_assign(const uint32_t ttoken) {
     fwrite(savevarinst, 2, 1, texttmp);
     fwrite(subtoebxinst, 2, 1, texttmp);
     fwrite(&tmp, 4, 1, texttmp);
-    printf("%u;\n", i);
+    //printf("%u;\n", i);
 
     return tok_next();
+}
+
+void patch_fwd(const uint32_t patchloc) {
+    uint32_t tmp = patchloc - ftell(texttmp);
+    fseek(texttmp, (patchloc - 4), SEEK_SET);
+    fwrite(&tmp, 4, 1, texttmp);
+    fseek(texttmp, 0, SEEK_END);
 }
 
 void compile_stmt(const uint32_t ttoken) {
@@ -258,18 +265,13 @@ void compile_stmt(const uint32_t ttoken) {
             token = tok_next();
             compile_expr(token);
 
-            printf("    test eax,eax;\n    je ");
             fwrite(condjumpinst, 8, 1, texttmp);
             
             uint32_t jumppos = ftell(texttmp);
             token = tok_next();
             compile_stmt(token);
 
-            uint32_t tmp = jumppos - ftell(texttmp);
-            fseek(texttmp, (jumppos - 4), SEEK_SET);
-            fwrite(&tmp, 4, 1, texttmp);
-            fseek(texttmp, 0, SEEK_END);
-
+            patch_fwd();
             token = tok_next();
         }
     }
@@ -303,20 +305,22 @@ int main(int argc, char** argv) {
         if(token != TOK_INT) {
             token = tok_next();
             functionname = token;
-            printf("void %d() {\n", functionname);
+            //printf("void %d() {\n", functionname);
             tok_next();
             token = tok_next();
             compile_stmt(token);
-            printf("    return;\n}\n\n");
-            fwrite(&returninst, 1, 1, texttmp);
+            //printf("    return;\n}\n\n");
             token = functionname;
             if(token == TOK_START) {
+                fwrite(terminateinst, 9, 1, texttmp);
                 break;
+            } else {
+                fwrite(&returninst, 1, 1, texttmp);
             }
         } else {
-            printf("int ");
+            //printf("int ");
             token = tok_next();
-            printf("%d;\n", token);
+            //printf("%d;\n", token);
             fwrite(&token, 4, 1, datatmp);
             dataamt += 1;
             tok_next();
@@ -326,11 +330,11 @@ int main(int argc, char** argv) {
     fwrite(elfheader, 52, 1, out);
     fwrite(textheader, 32, 1, out);
     fwrite(dataheader, 32, 1, out);
-    printf("At 0x%x in ELF file.\n", ftell(out));
+    //printf("At 0x%x in ELF file.\n", ftell(out));
     for(uint32_t i = 0; i < 12; i++) {
         fwrite(&padding, 1, 1, out);
     }
-    printf("At 0x%x in ELF file.\n", ftell(out));
+    //printf("At 0x%x in ELF file.\n", ftell(out));
 
     fseek(texttmp, 0, SEEK_END);
     uint32_t textlen = ftell(texttmp);
