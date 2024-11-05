@@ -55,7 +55,7 @@ const uint8_t addtoebxinst[2] = {0x81, 0xc3};
 const uint8_t subtoebxinst[2] = {0x81, 0xeb};
 const uint8_t prologue[6] = {0x55, 0x89, 0xe5, 0x83, 0xec, 0x04};
 const uint8_t condjumpinst[8] = {0x85, 0xc0, 0x0f, 0x84, 0x00, 0x00, 0x00, 0x00};
-const uint8_t compinst[6] = {0xb8, 0x00, 0x00, 0x00, 0x00, 0x0f};
+const uint8_t compinst[8] = {0x39, 0xc8, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x0f};
 //const uint8_t terminateinst[9] = {0xb8, 0x3c, 0x00, 0x00, 0x00, 0x6a, 0x00, 0xcd, 0x80};
 
 const uint8_t addinst[2] = {0x01, 0xc8};
@@ -207,7 +207,7 @@ void compile_expr(const uint32_t ttoken) {
         switch(op) {
             case TOK_ADD: fwrite(addinst, 2, 1, texttmp); break;
             case TOK_SUB: fwrite(subinst, 2, 1, texttmp); break;
-            case TOK_EQ: fwrite(compinst, 6, 1, texttmp); fwrite(eqinst, 2, 1, texttmp); break;
+            case TOK_EQ: fwrite(compinst, 8, 1, texttmp); fwrite(eqinst, 2, 1, texttmp); break;
             // case TOK_NE: fwrite(compinst, 6, 1, texttmp); fwrite(neinst, 2, 1, texttmp); break;
         }
     }
