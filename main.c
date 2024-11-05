@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
     Besides, the generated code from this will be insanely unoptimized. Setting rbx to an address is 10 bytes.
     I know there are optimizations I could make, but right now, I just want the basics. */
 
-    fwrite(prologue, 6, 1, texttmp);
+    fwrite(prologue, 9, 1, texttmp);
 
     fwrite(&ebxsetupinst, 1, 1, texttmp);
     fwrite(&padding, 1, 4, texttmp);
