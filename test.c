@@ -7,10 +7,4 @@ void _start() {
     tmp1 = 3;
     tmp2 = 2;
     tmp3 = tmp1 + tmp2;
-    if( 5 == 5 ){
-        tmp4 = 1;
-    }
-    if( 5 != 2 ){
-        tmp5 = 2;
-    }
 }
