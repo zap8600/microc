@@ -191,6 +191,8 @@ void compile_expr(const uint32_t ttoken) {
     switch(token) {
         case TOK_ADD: op = TOK_ADD; break;
         case TOK_SUB: op = TOK_SUB; break;
+        case TOK_EQ: op = TOK_EQ; break;
+        case TOK_NE: op = TOK_NE; break;
         default: break; // TODO: Add other operators
     }
 
@@ -205,6 +207,7 @@ void compile_expr(const uint32_t ttoken) {
         switch(op) {
             case TOK_ADD: printf("    add eax,ecx;\n"); fwrite(addinst, 2, 1, texttmp); break;
             case TOK_SUB: printf("    sub eax,ecx;\n"); fwrite(subinst, 2, 1, texttmp); break;
+            case TOK_EQ: break;
         }
     }
 }
@@ -253,10 +256,21 @@ void compile_stmt(const uint32_t ttoken) {
             token = compile_assign(token);
         } else {
             token = tok_next();
-            compile_expr();
+            compile_expr(token);
 
             printf("    test eax,eax;\n    je ");
-            //
+            fwrite(condjumpinst, 8, 1, texttmp);
+            
+            uint32_t jumppos = ftell(texttmp);
+            token = tok_next();
+            compile_stmt(token);
+
+            uint32_t tmp = jumppos - ftell(texttmp);
+            fseek(texttmp, (jumppos - 4), SEEK_SET);
+            fwrite(&tmp, 4, 1, texttmp);
+            fseek(texttmp, 0, SEEK_END);
+
+            token = tok_next();
         }
     }
 }
