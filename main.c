@@ -149,12 +149,12 @@ uint32_t getnewdatapos(const uint8_t bytes) {
 uint32_t compile_unary(const uint32_t ttoken) {
     uint32_t token = ttoken;
     if(tok_is_num) {
-        printf("    mov eax,imm ");
+        //printf("    mov eax,imm ");
         fwrite(&movinst, 1, 1, texttmp);
         //uint32_t tmp = byterev32(token);
         fwrite(&token, 4, 1, texttmp);
     } else {
-        printf("    add ebx,imm\n    mov eax,[ebx]\n    sub ebx,imm ");
+        //printf("    add ebx,imm\n    mov eax,[ebx]\n    sub ebx,imm ");
         fseek(datatmp, 0, SEEK_SET);
         uint32_t i = 0;
         while(i <= dataamt) {
@@ -326,7 +326,6 @@ int main(int argc, char** argv) {
     fwrite(&tmp, 4, 1, out);
     fseek(out, (52 + 32 + 4), SEEK_SET);
     fwrite(&datapos, 4, 1, out);
-    tmp = byterev32(tmp);
     fwrite(&tmp, 4, 1, out);
 
     fseek(out, (52 + 16), SEEK_SET);
@@ -338,7 +337,7 @@ int main(int argc, char** argv) {
 
     fseek(out, datapos, SEEK_SET);
     for(uint32_t i = 0; i < (4 * dataamt); i++) {
-        fwrite(&padding, 1, (4 * dataamt), out);
+        fwrite(&padding, 1, 1, out);
     }
 
     fclose(c);
