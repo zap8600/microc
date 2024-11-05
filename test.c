@@ -1,4 +1,4 @@
 int tmp1;
 void _start() {
-    tmp1 = 1;
+    tmp1 = 1 + 2;
 }
