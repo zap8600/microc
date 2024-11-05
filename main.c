@@ -54,6 +54,7 @@ const uint8_t returninst = 0xc3;
 const uint8_t addtoebxinst[2] = {0x81, 0xc3};
 const uint8_t subtoebxinst[2] = {0x81, 0xeb};
 const uint8_t prologue[6] = {0x55, 0x89, 0xe5, 0x83, 0xec, 0x04};
+const uint8_t condjumpinst[8] = {0x85, 0xc0, 0x0f, 0x84, 0x00, 0x00, 0x00, 0x00};
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
@@ -183,12 +184,8 @@ uint32_t compile_unary(const uint32_t ttoken) {
     return tok_next();
 }
 
-uint32_t dest;
-uint32_t compile_assign(const uint32_t ttoken) {
-    uint32_t token = ttoken;
-    dest = token;
-    tok_next();
-    token = tok_next();
+void compile_expr(const uint32_t ttoken) {
+    int token = ttoken;
     token = compile_unary(token);
     uint32_t op = 0;
     switch(token) {
@@ -210,7 +207,15 @@ uint32_t compile_assign(const uint32_t ttoken) {
             case TOK_SUB: printf("    sub eax,ecx;\n"); fwrite(subinst, 2, 1, texttmp); break;
         }
     }
+}
 
+uint32_t dest;
+uint32_t compile_assign(const uint32_t ttoken) {
+    uint32_t token = ttoken;
+    dest = token;
+    tok_next();
+    token = tok_next();
+    compile_expr(token);
     token = dest;
     printf("    add ebx,imm\n    mov [ebx],eax\n    sub ebx,imm");
     fseek(datatmp, 0, SEEK_SET);
@@ -239,6 +244,21 @@ uint32_t compile_assign(const uint32_t ttoken) {
     printf("%u;\n", i);
 
     return tok_next();
+}
+
+void compile_stmt(const uint32_t ttoken) {
+    uint32_t token = ttoken;
+    while(token != TOK_BLK_END) {
+        if(token != TOK_IF_BEGIN) {
+            token = compile_assign(token);
+        } else {
+            token = tok_next();
+            compile_expr();
+
+            printf("    test eax,eax;\n    je ");
+            //
+        }
+    }
 }
 
 uint32_t functionname;
@@ -272,9 +292,7 @@ int main(int argc, char** argv) {
             printf("void %d() {\n", functionname);
             tok_next();
             token = tok_next();
-            while(token != TOK_BLK_END) {
-                token = compile_assign(token);
-            }
+            compile_stmt(token);
             printf("    return;\n}\n\n");
             fwrite(&returninst, 1, 1, texttmp);
             token = functionname;
