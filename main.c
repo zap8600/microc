@@ -321,7 +321,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    fseek(out, 0x88, SEEK_SET);
+    fseek(out, 0x87, SEEK_SET);
     uint32_t tmp = getnewdatapos(datapos);
     fwrite(&tmp, 4, 1, out);
     fseek(out, (52 + 32 + 4), SEEK_SET);
