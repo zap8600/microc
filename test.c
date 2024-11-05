@@ -10,4 +10,7 @@ void _start() {
     if( tmp3 == 5 ){
         tmp4 = 1;
     }
+    if( tmp3 != 2 ){
+        tmp5 = 4;
+    }
 }
