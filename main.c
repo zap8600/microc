@@ -53,7 +53,7 @@ const uint8_t savevarinst[2] = {0x89, 0x03};
 const uint8_t returninst = 0xc3;
 const uint8_t addtoebxinst[2] = {0x81, 0xc3};
 const uint8_t subtoebxinst[2] = {0x81, 0xeb};
-const uint8_t prologue[9] = {0x55, 0x89, 0xe5, 0x81, 0xec, 0xd0, 0x00, 0x00, 0x00};
+const uint8_t prologue[6] = {0x55, 0x89, 0xe5, 0x83, 0xec, 0x04};
 const uint8_t condjumpinst[8] = {0x85, 0xc0, 0x0f, 0x84, 0x00, 0x00, 0x00, 0x00};
 const uint8_t compinst[6] = {0xb8, 0x00, 0x00, 0x00, 0x00, 0x0f};
 const uint8_t terminateinst[9] = {0xb8, 0x3c, 0x00, 0x00, 0x00, 0x6a, 0x00, 0xcd, 0x80};
@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
     Besides, the generated code from this will be insanely unoptimized. Setting rbx to an address is 10 bytes.
     I know there are optimizations I could make, but right now, I just want the basics. */
 
-    fwrite(prologue, 9, 1, texttmp);
+    fwrite(prologue, 6, 1, texttmp);
 
     fwrite(&ebxsetupinst, 1, 1, texttmp);
     fwrite(&padding, 1, 4, texttmp);
@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    fseek(out, 0x8b, SEEK_SET);
+    fseek(out, 0x87, SEEK_SET);
     uint32_t tmp = getnewdatapos(datapos);
     fwrite(&tmp, 4, 1, out);
     fseek(out, (52 + 32 + 4), SEEK_SET);
