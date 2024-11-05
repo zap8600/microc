@@ -207,8 +207,8 @@ void compile_expr(const uint32_t ttoken) {
         switch(op) {
             case TOK_ADD: fwrite(addinst, 2, 1, texttmp); break;
             case TOK_SUB: fwrite(subinst, 2, 1, texttmp); break;
-            case TOK_EQ: fwrite(compinst, 6, 1, texttmp); fwrite(eqinst, 2, 1, texttmp); break;
-            case TOK_NE: fwrite(compinst, 6, 1, texttmp); fwrite(neinst, 2, 1, texttmp); break;
+            // case TOK_EQ: fwrite(compinst, 6, 1, texttmp); fwrite(eqinst, 2, 1, texttmp); break;
+            // case TOK_NE: fwrite(compinst, 6, 1, texttmp); fwrite(neinst, 2, 1, texttmp); break;
         }
     }
 }
