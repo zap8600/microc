@@ -271,7 +271,7 @@ void compile_stmt(const uint32_t ttoken) {
             token = tok_next();
             compile_stmt(token);
 
-            patch_fwd();
+            patch_fwd(jumppos);
             token = tok_next();
         }
     }
