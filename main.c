@@ -56,7 +56,7 @@ const uint8_t subtoebxinst[2] = {0x81, 0xeb};
 const uint8_t prologue[6] = {0x55, 0x89, 0xe5, 0x83, 0xec, 0x04};
 const uint8_t condjumpinst[8] = {0x85, 0xc0, 0x0f, 0x84, 0x00, 0x00, 0x00, 0x00};
 const uint8_t compinst[6] = {0xb8, 0x00, 0x00, 0x00, 0x00, 0x0f};
-const uint8_t terminateinst[9] = {0xb8, 0x3c, 0x00, 0x00, 0x00, 0x6a, 0x00, 0xcd, 0x80};
+//const uint8_t terminateinst[9] = {0xb8, 0x3c, 0x00, 0x00, 0x00, 0x6a, 0x00, 0xcd, 0x80};
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
@@ -310,12 +310,11 @@ int main(int argc, char** argv) {
             token = tok_next();
             compile_stmt(token);
             //printf("    return;\n}\n\n");
+            fwrite(&returninst, 1, 1, texttmp);
             token = functionname;
             if(token == TOK_START) {
-                fwrite(terminateinst, 9, 1, texttmp);
+                //fwrite(terminateinst, 9, 1, texttmp);
                 break;
-            } else {
-                fwrite(&returninst, 1, 1, texttmp);
             }
         } else {
             //printf("int ");
