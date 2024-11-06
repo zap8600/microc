@@ -292,6 +292,7 @@ void compile_stmt(const uint32_t ttoken) {
                     uint32_t loopstart = ftell(texttmp);
                     uint32_t jumppos = control_flow_block();
                     patch_back(loopstart, jumppos);
+                    token = tok_next();
                 }
             } else {
                 uint32_t jumppos = control_flow_block();
