@@ -12,6 +12,7 @@ void _start() {
     if( tmp1 == 4 ){
         tmp2 = 6;
     }
+}
 
     asm 184;
     asm 1;
@@ -25,4 +26,3 @@ void _start() {
     asm 0;
     asm 205;
     asm 128;
-}
