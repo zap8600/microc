@@ -284,12 +284,12 @@ uint32_t control_flow_block() {
 void compile_stmt(const uint32_t ttoken) {
     uint32_t token = ttoken;
     while(token != TOK_BLK_END) {
-        printf("%d\n", token);
         if(token != TOK_ASM) {
             if(token != TOK_IF_BEGIN) {
                 if(token != TOK_WHILE_BEGIN) {
                     token = compile_assign(token);
                 } else {
+                    printf("while loop\n");
                     uint32_t loopstart = ftell(texttmp);
                     uint32_t jumppos = control_flow_block();
                     patch_back(loopstart, jumppos);
