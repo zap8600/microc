@@ -57,6 +57,7 @@ const uint8_t prologue[6] = {0x55, 0x89, 0xe5, 0x83, 0xec, 0x04};
 const uint8_t condjumpinst[8] = {0x85, 0xc0, 0x0f, 0x84, 0x00, 0x00, 0x00, 0x00};
 const uint8_t compinst[8] = {0x39, 0xc8, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x0f};
 const uint8_t terminateinst[12] = {0xb8, 0x01, 0x00, 0x00, 0x00, 0xbb, 0x00, 0x00, 0x00, 0x00, 0xcd, 0x80};
+const uint8_t jmpinst = 0xe9;
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
@@ -256,21 +257,42 @@ void patch_fwd(const uint32_t patchloc) {
     fseek(texttmp, 0, SEEK_END);
 }
 
+void patch_back(const uint32_t loopstart, const uint32_t patchloc) {
+    fwrite(&jmpinst, 1, 1, texttmp);
+    uint32_t tmp = loopstart - ftell(texttmp);
+    tmp -= 4;
+    fwrite(&tmp, 4, 1, texttmp);
+
+    patch_fwd(patchloc);
+}
+
+uint32_t control_flow_block() {
+    uint32_t token = tok_next();
+    compile_expr(token);
+    
+    fwrite(condjumpinst, 8, 1, texttmp);
+    
+    uint32_t jumppos = ftell(texttmp);
+    token = tok_next();
+    compile_stmt(token);
+
+    return jumppos;
+}
+
 void compile_stmt(const uint32_t ttoken) {
     uint32_t token = ttoken;
     while(token != TOK_BLK_END) {
         if(token != TOK_ASM) {
             if(token != TOK_IF_BEGIN) {
-                token = compile_assign(token);
+                if(token != TOK_WHILE_BEGIN) {
+                    token = compile_assign(token);
+                } else {
+                    uint32_t loopstart = ftell(texttmp);
+                    uint32_t jumppos = control_flow_block();
+                    patch_back(loopstart, jumppos);
+                }
             } else {
-                token = tok_next();
-                compile_expr(token);
-                
-                fwrite(condjumpinst, 8, 1, texttmp);
-                
-                uint32_t jumppos = ftell(texttmp);
-                token = tok_next();
-                compile_stmt(token);
+                uint32_t jumppos = control_flow_block();
                 
                 patch_fwd(jumppos);
                 token = tok_next();
