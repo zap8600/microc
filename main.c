@@ -62,6 +62,7 @@ const uint8_t prepderefinst[2] = {0x8b, 0x33};
 const uint8_t getderefinst[2] = {0x8b, 0x06};
 const uint8_t getaddressinst[2] = {0x8d, 0x03};
 const uint8_t setderefinst[2] = {0x89, 0x06};
+const uint8_t callinst = 0xe8;
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
@@ -161,10 +162,32 @@ uint32_t findvar(const uint32_t token) {
         fclose(texttmp);
         fclose(datatmp);
         fclose(out);
+        free(functionaddress);
+        free(functiontable);
         exit(1);
     }
     fseek(datatmp, 0, SEEK_END);
     return i;
+}
+
+uint32_t findfunction(const uint32_t token) {
+    uint32_t i = 0;
+    while(i <= functionamount) {
+        uint32_t function = functiontable[i];
+        if(function == token) break;
+        i++;
+    }
+    if(i > functionamount) { // Sucks to suck
+        fprintf(stderr, "Error: function hasn't been defined yet!: %d\n", token);
+        fclose(c);
+        fclose(texttmp);
+        fclose(datatmp);
+        fclose(out);
+        free(functionaddress);
+        free(functiontable);
+        exit(1);
+    }
+    return functionaddress[i];
 }
 
 void compile_expr(const uint32_t ttoken);
@@ -314,27 +337,37 @@ uint32_t control_flow_block() {
 void compile_stmt(const uint32_t ttoken) {
     uint32_t token = ttoken;
     while(token != TOK_BLK_END) {
-        if(token != TOK_ASM) {
-            if(token != TOK_IF_BEGIN) {
-                if(token != TOK_WHILE_BEGIN) {
-                    token = compile_assign(token);
+        if(tok_is_call) {
+            fwrite(&callinst, 1, 1, texttmp);
+            uint32_t i = findfunction(token);
+            uint32_t tmp = i - ftell(texttmp);
+            tmp -= 4;
+            fwrite(&tmp, 4, 1, texttmp);
+            tok_next();
+            token = tok_next();
+        } else {
+            if(token != TOK_ASM) {
+                if(token != TOK_IF_BEGIN) {
+                    if(token != TOK_WHILE_BEGIN) {
+                        token = compile_assign(token);
+                    } else {
+                        uint32_t loopstart = ftell(texttmp);
+                        uint32_t jumppos = control_flow_block();
+                        patch_back(loopstart, jumppos);
+                        token = tok_next();
+                    }
                 } else {
-                    uint32_t loopstart = ftell(texttmp);
                     uint32_t jumppos = control_flow_block();
-                    patch_back(loopstart, jumppos);
+                
+                    patch_fwd(jumppos);
                     token = tok_next();
                 }
             } else {
-                uint32_t jumppos = control_flow_block();
-                
-                patch_fwd(jumppos);
+                token = tok_next();
+                fwrite(&token, 1, 1, texttmp);
+                tok_next();
                 token = tok_next();
             }
-        } else {
-            token = tok_next();
-            fwrite(&token, 1, 1, texttmp);
-            tok_next();
-            token = tok_next();
         }
     }
 }
@@ -451,5 +484,7 @@ int main(int argc, char** argv) {
     fclose(datatmp);
     fclose(texttmp);
     fclose(out);
+    free(functionaddress);
+    free(functiontable);
     return 0;
 }
