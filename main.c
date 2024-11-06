@@ -56,7 +56,7 @@ const uint8_t subtoebxinst[2] = {0x81, 0xeb};
 const uint8_t prologue[6] = {0x55, 0x89, 0xe5, 0x83, 0xec, 0x04};
 const uint8_t condjumpinst[8] = {0x85, 0xc0, 0x0f, 0x84, 0x00, 0x00, 0x00, 0x00};
 const uint8_t compinst[8] = {0x39, 0xc8, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x0f};
-//const uint8_t terminateinst[9] = {0xb8, 0x3c, 0x00, 0x00, 0x00, 0x6a, 0x00, 0xcd, 0x80};
+const uint8_t terminateinst[12] = {0xb8, 0x01, 0x00, 0x00, 0x00, 0xbb, 0x00, 0x00, 0x00, 0x00, 0xcd, 0x80};
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
@@ -259,19 +259,26 @@ void patch_fwd(const uint32_t patchloc) {
 void compile_stmt(const uint32_t ttoken) {
     uint32_t token = ttoken;
     while(token != TOK_BLK_END) {
-        if(token != TOK_IF_BEGIN) {
-            token = compile_assign(token);
+        if(token != TOK_ASM) {
+            if(token != TOK_IF_BEGIN) {
+                token = compile_assign(token);
+            } else {
+                token = tok_next();
+                compile_expr(token);
+                
+                fwrite(condjumpinst, 8, 1, texttmp);
+                
+                uint32_t jumppos = ftell(texttmp);
+                token = tok_next();
+                compile_stmt(token);
+                
+                patch_fwd(jumppos);
+                token = tok_next();
+            }
         } else {
             token = tok_next();
-            compile_expr(token);
-
-            fwrite(condjumpinst, 8, 1, texttmp);
-            
-            uint32_t jumppos = ftell(texttmp);
-            token = tok_next();
-            compile_stmt(token);
-
-            patch_fwd(jumppos);
+            fwrite(&token, 1, 1, texttmp);
+            tok_next();
             token = tok_next();
         }
     }
@@ -294,7 +301,7 @@ int main(int argc, char** argv) {
     Besides, the generated code from this will be insanely unoptimized. Setting rbx to an address is 10 bytes.
     I know there are optimizations I could make, but right now, I just want the basics. */
 
-    fwrite(prologue, 6, 1, texttmp);
+    //fwrite(prologue, 6, 1, texttmp);
 
     fwrite(&ebxsetupinst, 1, 1, texttmp);
     fwrite(&padding, 1, 4, texttmp);
@@ -313,7 +320,7 @@ int main(int argc, char** argv) {
             fwrite(&returninst, 1, 1, texttmp);
             token = functionname;
             if(token == TOK_START) {
-                //fwrite(terminateinst, 9, 1, texttmp);
+                write(terminateinst, 12, 1, texttmp);
                 break;
             }
         } else {
@@ -356,7 +363,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    fseek(out, 0x87, SEEK_SET);
+    fseek(out, 0x81, SEEK_SET);
     uint32_t tmp = getnewdatapos(datapos);
     fwrite(&tmp, 4, 1, out);
     fseek(out, (52 + 32 + 4), SEEK_SET);
