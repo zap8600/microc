@@ -320,7 +320,7 @@ int main(int argc, char** argv) {
             fwrite(&returninst, 1, 1, texttmp);
             token = functionname;
             if(token == TOK_START) {
-                write(terminateinst, 12, 1, texttmp);
+                //write(terminateinst, 12, 1, texttmp);
                 break;
             }
         } else {
