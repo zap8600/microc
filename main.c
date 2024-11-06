@@ -251,7 +251,7 @@ uint32_t compile_assign(const uint32_t ttoken) {
 }
 
 void patch_fwd(const uint32_t patchloc) {
-    uint32_t tmp = patchloc - ftell(texttmp);
+    uint32_t tmp = ftell(texttmp) - patchloc;
     fseek(texttmp, (patchloc - 4), SEEK_SET);
     fwrite(&tmp, 4, 1, texttmp);
     fseek(texttmp, 0, SEEK_END);
