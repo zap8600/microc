@@ -59,7 +59,9 @@ const uint8_t compinst[8] = {0x39, 0xc8, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x0f};
 const uint8_t terminateinst[12] = {0xb8, 0x01, 0x00, 0x00, 0x00, 0xbb, 0x00, 0x00, 0x00, 0x00, 0xcd, 0x80};
 const uint8_t jmpinst = 0xe9;
 const uint8_t prepderefinst[2] = {0x8b, 0x33};
-const uint8_t getderef[2] = {0x8b, 0x06};
+const uint8_t getderefinst[2] = {0x8b, 0x06};
+const uint8_t getaddressinst[2] = {0x8d, 0x03};
+const uint8_t setderefinst[2] = {0x89, 0x06};
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
@@ -192,10 +194,18 @@ uint32_t compile_unary(const uint32_t ttoken) {
                     fwrite(&tmp, 4, 1, texttmp);
                 }
             } else {
-                //
+                token = tok_next();
+                uint32_t i = findvar(token);
+                fwrite(addtoebxinst, 2, 1, texttmp);
+                uint32_t tmp = i * 4;
+                fwrite(&tmp, 4, 1, texttmp);
+                fwrite(getaddressinst, 2, 1, texttmp);
+                fwrite(subtoebxinst, 2, 1, texttmp);
+                fwrite(&tmp, 4, 1, texttmp);
             }
         } else {
-            //
+            token = tok_next();
+            compile_expr(token);
         }
     } else {
         token = tok_next();
@@ -207,7 +217,7 @@ uint32_t compile_unary(const uint32_t ttoken) {
         fwrite(prepderefinst, 2, 1, texttmp);
         fwrite(subtoebxinst, 2, 1, texttmp);
         fwrite(&tmp, 4, 1, texttmp);
-        fwrite();
+        fwrite(getderefinst, 2, 1, texttmp);
     }
     return tok_next();
 }
@@ -242,19 +252,37 @@ void compile_expr(const uint32_t ttoken) {
 uint32_t dest;
 uint32_t compile_assign(const uint32_t ttoken) {
     uint32_t token = ttoken;
-    dest = token;
-    tok_next();
-    token = tok_next();
-    compile_expr(token);
-    token = dest;
-    uint32_t i = findvar(token);
-    fwrite(addtoebxinst, 2, 1, texttmp);
-    uint32_t tmp = i * 4;
-    fwrite(&tmp, 4, 1, texttmp);
-    fwrite(savevarinst, 2, 1, texttmp);
-    fwrite(subtoebxinst, 2, 1, texttmp);
-    fwrite(&tmp, 4, 1, texttmp);
-    //printf("%u;\n", i);
+    if(token != TOK_DEREF) {
+        dest = token;
+        tok_next();
+        token = tok_next();
+        compile_expr(token);
+        token = dest;
+        uint32_t i = findvar(token);
+        fwrite(addtoebxinst, 2, 1, texttmp);
+        uint32_t tmp = i * 4;
+        fwrite(&tmp, 4, 1, texttmp);
+        fwrite(savevarinst, 2, 1, texttmp);
+        fwrite(subtoebxinst, 2, 1, texttmp);
+        fwrite(&tmp, 4, 1, texttmp);
+    } else {
+        token = tok_next();
+        dest = token;
+        tok_next();
+        token = tok_next();
+        compile_expr(token);
+
+        token = dest;
+        uint32_t i = findvar(token);
+
+        fwrite(addtoebxinst, 2, 1, texttmp);
+        uint32_t tmp = i * 4;
+        fwrite(&tmp, 4, 1, texttmp);
+        fwrite(prepderefinst, 2, 1, texttmp);
+        fwrite(subtoebxinst, 2, 1, texttmp);
+        fwrite(&tmp, 4, 1, texttmp);
+        fwrite(setderefinst, 2, 1, texttmp);
+    }
 
     return tok_next();
 }
