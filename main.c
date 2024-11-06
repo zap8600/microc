@@ -269,6 +269,7 @@ void patch_back(const uint32_t loopstart, const uint32_t patchloc) {
 void compile_stmt(const uint32_t ttoken);
 
 uint32_t control_flow_block() {
+    printf("Condition: 0x%x\n", ftell(texttmp) + 0x80);
     uint32_t token = tok_next();
     compile_expr(token);
     
