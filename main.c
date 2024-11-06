@@ -58,6 +58,8 @@ const uint8_t condjumpinst[8] = {0x85, 0xc0, 0x0f, 0x84, 0x00, 0x00, 0x00, 0x00}
 const uint8_t compinst[8] = {0x39, 0xc8, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x0f};
 const uint8_t terminateinst[12] = {0xb8, 0x01, 0x00, 0x00, 0x00, 0xbb, 0x00, 0x00, 0x00, 0x00, 0xcd, 0x80};
 const uint8_t jmpinst = 0xe9;
+const uint8_t prepderefinst[2] = {0x8b, 0x33};
+const uint8_t getderef[2] = {0x8b, 0x06};
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
@@ -151,38 +153,61 @@ uint32_t getnewdatapos(const uint32_t bytes) {
     return 0x08048000 + bytes;
 }
 
+uint32_t findvar(const uint32_t token) {
+    fseek(datatmp, 0, SEEK_SET);
+    uint32_t i = 0;
+    while(i <= dataamt) {
+        uint32_t var;
+        fread(&var, 4, 1, datatmp);
+        if(var == token) break;
+        i++;
+    }
+    if(i > dataamt) { // Sucks to suck
+        fprintf(stderr, "Error: variable hasn't been defined yet!: %d\n", token);
+        fclose(c);
+        fclose(texttmp);
+        fclose(datatmp);
+        fclose(out);
+        exit(1);
+    }
+    fseek(datatmp, 0, SEEK_END);
+    return i;
+}
+
 uint32_t compile_unary(const uint32_t ttoken) {
     uint32_t token = ttoken;
-    if(tok_is_num) {
-        //printf("    mov eax,imm ");
-        fwrite(&movinst, 1, 1, texttmp);
-        //uint32_t tmp = byterev32(token);
-        fwrite(&token, 4, 1, texttmp);
+    if(token != TOK_DEREF) {
+        if(token != TOK_LPAREN) {
+            if(token != TOK_ADDR) {
+                if(tok_is_num) {
+                    fwrite(&movinst, 1, 1, texttmp);
+                    fwrite(&token, 4, 1, texttmp);
+                } else {
+                    uint32_t i = findvar(token);
+                    fwrite(addtoebxinst, 2, 1, texttmp);
+                    uint32_t tmp = i * 4; // Need to add .data address to the token
+                    fwrite(&tmp, 4, 1, texttmp);
+                    fwrite(getvarinst, 2, 1, texttmp);
+                    fwrite(subtoebxinst, 2, 1, texttmp);
+                    fwrite(&tmp, 4, 1, texttmp);
+                }
+            } else {
+                //
+            }
+        } else {
+            //
+        }
     } else {
-        //printf("    add ebx,imm\n    mov eax,[ebx]\n    sub ebx,imm ");
-        fseek(datatmp, 0, SEEK_SET);
-        uint32_t i = 0;
-        while(i <= dataamt) {
-            uint32_t var;
-            fread(&var, 4, 1, datatmp);
-            if(var == token) break;
-            i++;
-        }
-        if(i > dataamt) { // Sucks to suck
-            fprintf(stderr, "Error: variable hasn't been defined yet!: %d\n", token);
-            fclose(c);
-            fclose(texttmp);
-            fclose(datatmp);
-            fclose(out);
-            exit(1);
-        }
-        fseek(datatmp, 0, SEEK_END);
+        token = tok_next();
+        uint32_t i = findvar(token);
+
         fwrite(addtoebxinst, 2, 1, texttmp);
-        uint32_t tmp = i * 4; // Need to add .data address to the token
+        uint32_t tmp = i * 4;
         fwrite(&tmp, 4, 1, texttmp);
-        fwrite(getvarinst, 2, 1, texttmp);
+        fwrite(prepderefinst, 2, 1, texttmp);
         fwrite(subtoebxinst, 2, 1, texttmp);
         fwrite(&tmp, 4, 1, texttmp);
+        fwrite();
     }
     return tok_next();
 }
@@ -222,23 +247,7 @@ uint32_t compile_assign(const uint32_t ttoken) {
     token = tok_next();
     compile_expr(token);
     token = dest;
-    fseek(datatmp, 0, SEEK_SET);
-    uint32_t i = 0;
-    while(i <= dataamt) {
-        uint32_t var;
-        fread(&var, 4, 1, datatmp);
-        if(var == token) break;
-        i++;
-    }
-    if(i > dataamt) { // Sucks to suck
-        fprintf(stderr, "Error: variable hasn't been defined yet!: %d\n", token);
-        fclose(c);
-        fclose(texttmp);
-        fclose(datatmp);
-        fclose(out);
-        exit(1);
-    }
-    fseek(datatmp, 0, SEEK_END);
+    uint32_t i = findvar(token);
     fwrite(addtoebxinst, 2, 1, texttmp);
     uint32_t tmp = i * 4;
     fwrite(&tmp, 4, 1, texttmp);
@@ -269,7 +278,6 @@ void patch_back(const uint32_t loopstart, const uint32_t patchloc) {
 void compile_stmt(const uint32_t ttoken);
 
 uint32_t control_flow_block() {
-    printf("Condition: 0x%x\n", ftell(texttmp) + 0x80);
     uint32_t token = tok_next();
     compile_expr(token);
     
