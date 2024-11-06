@@ -169,7 +169,7 @@ uint32_t compile_unary(const uint32_t ttoken) {
             i++;
         }
         if(i > dataamt) { // Sucks to suck
-            fprintf(stderr, "Error: variable hasn't been defined yet!\n");
+            fprintf(stderr, "Error: variable hasn't been defined yet!: %d\n", token);
             fclose(c);
             fclose(texttmp);
             fclose(datatmp);
@@ -231,7 +231,7 @@ uint32_t compile_assign(const uint32_t ttoken) {
         i++;
     }
     if(i > dataamt) { // Sucks to suck
-        fprintf(stderr, "Error: variable hasn't been defined yet!\n");
+        fprintf(stderr, "Error: variable hasn't been defined yet!: %d\n", token);
         fclose(c);
         fclose(texttmp);
         fclose(datatmp);
@@ -289,7 +289,6 @@ void compile_stmt(const uint32_t ttoken) {
                 if(token != TOK_WHILE_BEGIN) {
                     token = compile_assign(token);
                 } else {
-                    printf("while loop\n");
                     uint32_t loopstart = ftell(texttmp);
                     uint32_t jumppos = control_flow_block();
                     patch_back(loopstart, jumppos);
