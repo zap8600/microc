@@ -12,10 +12,12 @@ void _start() {
 
     amt = 4;
     n1 = 1;
-    n = n1 + n2;
-    n2 = n1;
-    n1 = n;
-    amt = amt - 1;
+    while ( amt != 0 ){
+        n = n1 + n2;
+        n2 = n1;
+        n1 = n;
+        amt = amt - 1;
+    }
 
     asm 184;
     asm 1;
