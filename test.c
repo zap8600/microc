@@ -1,5 +1,7 @@
-int tmp1;
-int tmp2;
+int n1;
+int n2;
+int n;
+int amt;
 void _start() {
     asm 85;
     asm 137;
@@ -8,9 +10,13 @@ void _start() {
     asm 236;
     asm 4;
 
-    tmp1 = 3;
-    if( tmp1 == 4 ){
-        tmp2 = 6;
+    amt = 4;
+    n1 = 1;
+    while( amt != 0 ){
+        n = n1 + n2;
+        n2 = n1;
+        n1 = n;
+        amt = amt - 1;
     }
 }
 
