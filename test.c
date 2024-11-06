@@ -12,7 +12,7 @@ void _start() {
 
     amt = 4;
     n1 = 1;
-    while ( amt != 0 ){
+    while( amt != 0 ){
         n = n1 + n2;
         n2 = n1;
         n1 = n;
