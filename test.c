@@ -1,6 +1,5 @@
 int tmp1;
 int tmp2;
-int tmp3;
 void _start() {
     asm 85;
     asm 137;
@@ -9,9 +8,9 @@ void _start() {
     asm 236;
     asm 4;
 
-    tmp1 = 2;
+    tmp1 = 3;
     tmp2 = & tmp1;
-    tmp3 = *(int*) tmp2 + 3;
+    *(int*) tmp2 = *(int*) tmp2 + 2;
 }
 
     asm 184;
