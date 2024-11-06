@@ -9,9 +9,7 @@ void _start() {
     asm 4;
 
     tmp1 = 3;
-    if( tmp1 == 4 ){
-        tmp2 = 6;
-    }
+    tmp2 = tmp == 4;
 }
 
     asm 184;
