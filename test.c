@@ -1,6 +1,12 @@
 int tmp1;
 int tmp2;
 void _start() {
+    asm 187;
+    asm 0;
+    asm 0;
+    asm 0;
+    asm 0;
+    
     asm 85;
     asm 137;
     asm 229;

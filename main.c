@@ -75,6 +75,10 @@ FILE* datatmp;
 FILE* texttmp;
 FILE* out;
 
+uint32_t functionamount;
+uint32_t* functiontable;
+uint32_t* functionaddress;
+
 uint32_t dataamt; // Holds how many variables we currently have.
 
 bool semi;
@@ -96,7 +100,7 @@ bool tok_is_num;
 bool tok_is_call;
 uint32_t tok_next() {
     uint32_t token = 0;
-    char lasttwo[2];
+    uint16_t lasttwo;
     tok_is_num = false;
     tok_is_call = false;
 
@@ -108,27 +112,14 @@ uint32_t tok_next() {
     if(ch <= 57) tok_is_num = true;
 
     while(ch > 32) {
-        lasttwo[1] = lasttwo[0];
-        lasttwo[0] = ch;
+        lasttwo = (lasttwo << 8) | (uint16_t)ch;
 
         token = 10 * token + (ch - 48);
 
         ch = getch();
     }
 
-    if((*(uint16_t*)lasttwo) == 0x2f2f) {
-        while(ch != 10) {
-            ch = getch();
-        }
-        return tok_next();
-    } else if((*(uint16_t*)lasttwo) == 0x2f2a) {
-        int ttoken = 0;
-        while(ttoken != 65475) {
-            ttoken = tok_next();
-        }
-        return tok_next();
-    }
-    if((*(uint16_t*)lasttwo) == 0x2829) {
+    if(lasttwo == 0x2829) {
         tok_is_call = true;
     }
 
@@ -360,6 +351,9 @@ int main(int argc, char** argv) {
     texttmp = fopen("./texttmp", "wb+");
     out = fopen(argv[2], "wb");
 
+    functiontable = (uint32_t*)malloc(4);
+    functionaddress = (uint32_t*)malloc(4);
+
     /* At the moment, the stack pointer only needs 4 bytes for eax when doing operations on variables.
     It'll need more sixe for local variables in the future, but for now we can keep code size down.
     Besides, the generated code from this will be insanely unoptimized. Setting rbx to an address is 10 bytes.
@@ -376,7 +370,14 @@ int main(int argc, char** argv) {
         if(token != TOK_INT) {
             token = tok_next();
             functionname = token;
-            //printf("void %d() {\n", functionname);
+
+            functionamount += 1;
+            functiontable = (uint32_t*)realloc(functiontable, functionamount * 4);
+            functionaddress = (uint32_t*)realloc(functionaddress, functionamount * 4);
+
+            functiontable[functionamount - 1] = functionname;
+            functionaddress[functionamount - 1] = ftell(texttmp);
+
             tok_next();
             token = tok_next();
             compile_stmt(token);
