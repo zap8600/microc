@@ -9,7 +9,7 @@ void _start() {
     asm 4;
 
     tmp1 = 3;
-    tmp2 = tmp == 4;
+    tmp2 = tmp1 == 4;
 }
 
     asm 184;
