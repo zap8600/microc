@@ -251,7 +251,7 @@ uint32_t compile_assign(const uint32_t ttoken) {
 }
 
 void patch_fwd(const uint32_t patchloc) {
-    uint32_t tmp = (patchloc + 0x80) - ftell(texttmp);
+    uint32_t tmp = patchloc - ftell(texttmp);
     fseek(texttmp, (patchloc - 4), SEEK_SET);
     fwrite(&tmp, 4, 1, texttmp);
     fseek(texttmp, 0, SEEK_END);
@@ -259,7 +259,7 @@ void patch_fwd(const uint32_t patchloc) {
 
 void patch_back(const uint32_t loopstart, const uint32_t patchloc) {
     fwrite(&jmpinst, 1, 1, texttmp);
-    uint32_t tmp = (loopstart + 0x80) - ftell(texttmp); // Make sure to account for offset
+    uint32_t tmp = loopstart - ftell(texttmp);
     tmp -= 4;
     fwrite(&tmp, 4, 1, texttmp);
 
