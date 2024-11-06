@@ -176,6 +176,8 @@ uint32_t findvar(const uint32_t token) {
     return i;
 }
 
+void compile_expr(const uint32_t ttoken);
+
 uint32_t compile_unary(const uint32_t ttoken) {
     uint32_t token = ttoken;
     if(token != TOK_DEREF) {
