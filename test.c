@@ -36,9 +36,21 @@ void syscall() {
     asm 129; asm 235; asm 4; asm 0; asm 0; asm 0;
 }
 
+int itoa_num;
+int itoa_buf;
+void itoa() {
+    while( itoa_num != 0 ){
+        *(int*) itoa_buf = ( itoa_num % 10 ) + 48;
+        itoa_num = itoa_num / 10;
+        itoa_buf = itoa_buf + 1;
+    }
+}
+
 int msg;
 void main() {
-    msg = 270625096;
+    itoa_num = 256 * 4;
+    itoa_buf = & msg;
+    itoa();
 
     syscall_NR = 4;
     syscall_arg0 = 1;

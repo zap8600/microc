@@ -67,8 +67,20 @@ const uint8_t callinst = 0xe8;
 
 const uint8_t addinst[2] = {0x01, 0xc8};
 const uint8_t subinst[2] = {0x29, 0xc8};
+const uint8_t mulinst[2] = {0xf7, 0xe1};
+const uint8_t divinst[4] = {0x32, 0xd2, 0xf7, 0xf1};
+const uint8_t moduloinst[6] = {0x32, 0xd2, 0xf7, 0xf1, 0x89, 0xd0};
+const uint8_t andinst[2] = {0x21, 0xc8};
+const uint8_t orinst[2] = {0x09, 0xc8};
+const uint8_t xorinst[2] = {0x31, 0xc8};
+const uint8_t shlinst[2] = {0xd3, 0xe0};
+const uint8_t shrinst[2] = {0xd3, 0xe8};
 const uint8_t eqinst[2] = {0x94, 0xc0};
 const uint8_t neinst[2] = {0x95, 0xc0};
+const uint8_t ltinst[2] = {0x9c, 0xc0};
+const uint8_t gtinst[2] = {0x9f, 0xc0};
+const uint8_t leinst[2] = {0x9e, 0xc0};
+const uint8_t geinst[2] = {0x9d, 0xc0};
 
 const uint8_t padding;
 
@@ -247,8 +259,19 @@ void compile_expr(const uint32_t ttoken) {
         case TOK_ADD: op = TOK_ADD; break;
         case TOK_SUB: op = TOK_SUB; break;
         case TOK_MUL: op = TOK_MUL; break;
+        case TOK_DIV: op = TOK_DIV; break;
+        case TOK_MODULO: op = TOK_MODULO; break;
+        case TOK_AND: op = TOK_AND; break;
+        case TOK_OR: op = TOK_OR; break;
+        case TOK_XOR: op = TOK_XOR; break;
+        case TOK_SHL: op = TOK_SHL; break;
+        case TOK_SHR: op = TOK_SHR; break;
         case TOK_EQ: op = TOK_EQ; break;
         case TOK_NE: op = TOK_NE; break;
+        case TOK_LT: op = TOK_LT; break;
+        case TOK_GT: op = TOK_GT; break;
+        case TOK_LE: op = TOK_LE; break;
+        case TOK_GE: op = TOK_GE; break;
         default: break; // TODO: Add other operators
     }
 
@@ -261,8 +284,20 @@ void compile_expr(const uint32_t ttoken) {
         switch(op) {
             case TOK_ADD: fwrite(addinst, 2, 1, texttmp); break;
             case TOK_SUB: fwrite(subinst, 2, 1, texttmp); break;
+            case TOK_MUL: fwrite(mulinst, 2, 1, texttmp); break;
+            case TOK_DIV: fwrite(divinst, 4, 1, texttmp); break;
+            case TOK_MODULO: fwrite(moduloinst, 6, 1, texttmp); break;
+            case TOK_AND: fwrite(andinst, 2, 1, texttmp); break;
+            case TOK_OR: fwrite(orinst, 2, 1, texttmp); break;
+            case TOK_XOR: fwrite(xorinst, 2, 1, texttmp); break;
+            case TOK_SHL: fwrite(shlinst, 2, 1, texttmp); break;
+            case TOK_SHR: fwrite(shrinst, 2, 1, texttmp); break;
             case TOK_EQ: fwrite(compinst, 8, 1, texttmp); fwrite(eqinst, 2, 1, texttmp); break;
             case TOK_NE: fwrite(compinst, 8, 1, texttmp); fwrite(neinst, 2, 1, texttmp); break;
+            case TOK_LT: fwrite(compinst, 8, 1, texttmp); fwrite(ltinst, 2, 1, texttmp);
+            case TOK_GT: fwrite(compinst, 8, 1, texttmp); fwrite(gtinst, 2, 1, texttmp);
+            case TOK_LE: fwrite(compinst, 8, 1, texttmp); fwrite(leinst, 2, 1, texttmp); break;
+            case TOK_GE: fwrite(compinst, 8, 1, texttmp); fwrite(geinst, 2, 1, texttmp); break;
         }
     }
 }
