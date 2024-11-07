@@ -49,24 +49,48 @@ void write() {
     write_return = syscall_return;
 }
 
+int firstbreak;
+int currentbreak;
+
 int brk_addr;
 int brk_return;
 void brk() {
     syscall_NR = 45;
     syscall_arg0 = brk_addr;
     syscall();
-    brk_return = syscall_return;
+    brk_return; = syscall_return;
 }
 
 int sbrk_increment;
+int sbrk_return;
 void sbrk() {
-    //
+    if( firstbreak == 0 ){
+        brk_addr = 0;
+        brk();
+        firstbreak = brk_return;
+    }
+    brk_addr = brk_break + sbrk_increment;
+    brk();
+    sbrk_return = brk_return;
 }
 
 int malloc_size;
-int malloc_p;
+int malloc_tmp;
+int malloc_return;
 void malloc() {
-    //
+    sbrk_increment = 0;
+    sbrk();
+    malloc_return = sbrk_return;
+    sbrk_increment = malloc_size;
+    sbrk();
+    malloc_tmp = sbrk_return;
+
+    if( tmp == 4294967295 ){
+        malloc_return = 0;
+    }
+    if( tmp != 4294967295 ){
+
+    }
 }
 
 int msg;
