@@ -36,14 +36,37 @@ void syscall() {
     asm 129; asm 235; asm 4; asm 0; asm 0; asm 0;
 }
 
-int itoa_num;
-int itoa_buf;
-void itoa() {
-    while( itoa_num != 0 ){
-        *(int*) itoa_buf = ( itoa_num % 10 ) + 48;
-        itoa_num = itoa_num / 10;
-        itoa_buf = itoa_buf + 1;
-    }
+int write_fd;
+int write_ptr;
+int write_count;
+int write_return;
+void write() {
+    syscall_NR = 4;
+    syscall_arg0 = write_fd;
+    syscall_arg1 = write_ptr;
+    syscall_arg2 = write_count;
+    syscall();
+    write_return = syscall_return;
+}
+
+int brk_addr;
+int brk_return;
+void brk() {
+    syscall_NR = 45;
+    syscall_arg0 = brk_addr;
+    syscall();
+    brk_return = syscall_return;
+}
+
+int sbrk_increment;
+void sbrk() {
+    //
+}
+
+int malloc_size;
+int malloc_p;
+void malloc() {
+    //
 }
 
 int msg;
