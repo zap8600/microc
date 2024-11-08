@@ -85,15 +85,11 @@ const uint8_t geinst[2] = {0x9d, 0xc0};
 const uint8_t padding;
 
 FILE* c;
-FILE* datatmp;
-FILE* texttmp;
 FILE* out;
 
-uint32_t functionamount;
-uint32_t* functiontable;
-uint32_t* functionaddress;
-
-uint32_t dataamt; // Holds how many variables we currently have.
+uint32_t symbolamount;
+uint32_t* symboltable;
+uint32_t varamt;
 
 bool semi;
 int getch() {
@@ -161,46 +157,37 @@ uint32_t getnewpos(const uint32_t bytes) {
 }
 
 uint32_t findvar(const uint32_t token) {
-    fseek(datatmp, 0, SEEK_SET);
     uint32_t i = 0;
-    while(i <= dataamt) {
-        uint32_t var;
-        fread(&var, 4, 1, datatmp);
+    while(i < symbolamount) {
+        uint32_t var = *(uint32_t*)(symboltable + (i * 8));
         if(var == token) break;
         i++;
     }
-    if(i > dataamt) { // Sucks to suck
+    if(i >= symbolamount) { // Sucks to suck
         fprintf(stderr, "Error: variable hasn't been defined yet!: %d\n", token);
         fclose(c);
-        fclose(texttmp);
-        fclose(datatmp);
         fclose(out);
-        free(functionaddress);
-        free(functiontable);
+        free(symboltable);
         exit(1);
     }
-    fseek(datatmp, 0, SEEK_END);
-    return i;
+    return *(uint32_t*)(symboltable + ((i * 8) + 4));
 }
 
 uint32_t findfunction(const uint32_t token) {
     uint32_t i = 0;
-    while(i <= functionamount) {
-        uint32_t function = functiontable[i];
+    while(i < symbolamount) {
+        uint32_t function = *(uint32_t*)(symboltable + (i * 8));
         if(function == token) break;
         i++;
     }
-    if(i > functionamount) { // Sucks to suck
+    if(i >= symbolamount) { // Sucks to suck
         fprintf(stderr, "Error: function hasn't been defined yet!: %d\n", token);
         fclose(c);
-        fclose(texttmp);
-        fclose(datatmp);
         fclose(out);
-        free(functionaddress);
-        free(functiontable);
+        free(symboltable);
         exit(1);
     }
-    return functionaddress[i];
+    return *(uint32_t*)(symboltable + ((i * 8) + 4));
 }
 
 void compile_expr(const uint32_t ttoken);
@@ -211,26 +198,26 @@ uint32_t compile_unary(const uint32_t ttoken) {
         if(token != TOK_LPAREN) {
             if(token != TOK_ADDR) {
                 if(tok_is_num) {
-                    fwrite(&movinst, 1, 1, texttmp);
-                    fwrite(&token, 4, 1, texttmp);
+                    fwrite(&movinst, 1, 1, out);
+                    fwrite(&token, 4, 1, out);
                 } else {
                     uint32_t i = findvar(token);
-                    fwrite(addtoebxinst, 2, 1, texttmp);
+                    fwrite(addtoebxinst, 2, 1, out);
                     uint32_t tmp = i * 4; // Need to add .data address to the token
-                    fwrite(&tmp, 4, 1, texttmp);
-                    fwrite(getvarinst, 2, 1, texttmp);
-                    fwrite(subtoebxinst, 2, 1, texttmp);
-                    fwrite(&tmp, 4, 1, texttmp);
+                    fwrite(&tmp, 4, 1, out);
+                    fwrite(getvarinst, 2, 1, out);
+                    fwrite(subtoebxinst, 2, 1, out);
+                    fwrite(&tmp, 4, 1, out);
                 }
             } else {
                 token = tok_next();
                 uint32_t i = findvar(token);
-                fwrite(addtoebxinst, 2, 1, texttmp);
+                fwrite(addtoebxinst, 2, 1, out);
                 uint32_t tmp = i * 4;
-                fwrite(&tmp, 4, 1, texttmp);
-                fwrite(getaddressinst, 2, 1, texttmp);
-                fwrite(subtoebxinst, 2, 1, texttmp);
-                fwrite(&tmp, 4, 1, texttmp);
+                fwrite(&tmp, 4, 1, out);
+                fwrite(getaddressinst, 2, 1, out);
+                fwrite(subtoebxinst, 2, 1, out);
+                fwrite(&tmp, 4, 1, out);
             }
         } else {
             token = tok_next();
@@ -240,13 +227,13 @@ uint32_t compile_unary(const uint32_t ttoken) {
         token = tok_next();
         uint32_t i = findvar(token);
 
-        fwrite(addtoebxinst, 2, 1, texttmp);
+        fwrite(addtoebxinst, 2, 1, out);
         uint32_t tmp = i * 4;
-        fwrite(&tmp, 4, 1, texttmp);
-        fwrite(prepderefinst, 2, 1, texttmp);
-        fwrite(subtoebxinst, 2, 1, texttmp);
-        fwrite(&tmp, 4, 1, texttmp);
-        fwrite(getderefinst, 2, 1, texttmp);
+        fwrite(&tmp, 4, 1, out);
+        fwrite(prepderefinst, 2, 1, out);
+        fwrite(subtoebxinst, 2, 1, out);
+        fwrite(&tmp, 4, 1, out);
+        fwrite(getderefinst, 2, 1, out);
     }
     return tok_next();
 }
@@ -276,28 +263,28 @@ void compile_expr(const uint32_t ttoken) {
     }
 
     if(op != 0) {
-        fwrite(&saveaxinst, 1, 1, texttmp);
+        fwrite(&saveaxinst, 1, 1, out);
         token = tok_next();
         token = compile_unary(token);
-        fwrite(&returnecxinst, 1, 1, texttmp);
-        fwrite(&swapinst, 1, 1, texttmp);
+        fwrite(&returnecxinst, 1, 1, out);
+        fwrite(&swapinst, 1, 1, out);
         switch(op) {
-            case TOK_ADD: fwrite(addinst, 2, 1, texttmp); break;
-            case TOK_SUB: fwrite(subinst, 2, 1, texttmp); break;
-            case TOK_MUL: fwrite(mulinst, 2, 1, texttmp); break;
-            case TOK_DIV: fwrite(divinst, 4, 1, texttmp); break;
-            case TOK_MODULO: fwrite(moduloinst, 6, 1, texttmp); break;
-            case TOK_AND: fwrite(andinst, 2, 1, texttmp); break;
-            case TOK_OR: fwrite(orinst, 2, 1, texttmp); break;
-            case TOK_XOR: fwrite(xorinst, 2, 1, texttmp); break;
-            case TOK_SHL: fwrite(shlinst, 2, 1, texttmp); break;
-            case TOK_SHR: fwrite(shrinst, 2, 1, texttmp); break;
-            case TOK_EQ: fwrite(compinst, 8, 1, texttmp); fwrite(eqinst, 2, 1, texttmp); break;
-            case TOK_NE: fwrite(compinst, 8, 1, texttmp); fwrite(neinst, 2, 1, texttmp); break;
-            case TOK_LT: fwrite(compinst, 8, 1, texttmp); fwrite(ltinst, 2, 1, texttmp);
-            case TOK_GT: fwrite(compinst, 8, 1, texttmp); fwrite(gtinst, 2, 1, texttmp);
-            case TOK_LE: fwrite(compinst, 8, 1, texttmp); fwrite(leinst, 2, 1, texttmp); break;
-            case TOK_GE: fwrite(compinst, 8, 1, texttmp); fwrite(geinst, 2, 1, texttmp); break;
+            case TOK_ADD: fwrite(addinst, 2, 1, out); break;
+            case TOK_SUB: fwrite(subinst, 2, 1, out); break;
+            case TOK_MUL: fwrite(mulinst, 2, 1, out); break;
+            case TOK_DIV: fwrite(divinst, 4, 1, out); break;
+            case TOK_MODULO: fwrite(moduloinst, 6, 1, out); break;
+            case TOK_AND: fwrite(andinst, 2, 1, out); break;
+            case TOK_OR: fwrite(orinst, 2, 1, out); break;
+            case TOK_XOR: fwrite(xorinst, 2, 1, out); break;
+            case TOK_SHL: fwrite(shlinst, 2, 1, out); break;
+            case TOK_SHR: fwrite(shrinst, 2, 1, out); break;
+            case TOK_EQ: fwrite(compinst, 8, 1, out); fwrite(eqinst, 2, 1, out); break;
+            case TOK_NE: fwrite(compinst, 8, 1, out); fwrite(neinst, 2, 1, out); break;
+            case TOK_LT: fwrite(compinst, 8, 1, out); fwrite(ltinst, 2, 1, out);
+            case TOK_GT: fwrite(compinst, 8, 1, out); fwrite(gtinst, 2, 1, out);
+            case TOK_LE: fwrite(compinst, 8, 1, out); fwrite(leinst, 2, 1, out); break;
+            case TOK_GE: fwrite(compinst, 8, 1, out); fwrite(geinst, 2, 1, out); break;
         }
     }
 }
@@ -312,12 +299,12 @@ uint32_t compile_assign(const uint32_t ttoken) {
         compile_expr(token);
         token = dest;
         uint32_t i = findvar(token);
-        fwrite(addtoebxinst, 2, 1, texttmp);
+        fwrite(addtoebxinst, 2, 1, out);
         uint32_t tmp = i * 4;
-        fwrite(&tmp, 4, 1, texttmp);
-        fwrite(savevarinst, 2, 1, texttmp);
-        fwrite(subtoebxinst, 2, 1, texttmp);
-        fwrite(&tmp, 4, 1, texttmp);
+        fwrite(&tmp, 4, 1, out);
+        fwrite(savevarinst, 2, 1, out);
+        fwrite(subtoebxinst, 2, 1, out);
+        fwrite(&tmp, 4, 1, out);
     } else {
         token = tok_next();
         dest = token;
@@ -328,30 +315,30 @@ uint32_t compile_assign(const uint32_t ttoken) {
         token = dest;
         uint32_t i = findvar(token);
 
-        fwrite(addtoebxinst, 2, 1, texttmp);
+        fwrite(addtoebxinst, 2, 1, out);
         uint32_t tmp = i * 4;
-        fwrite(&tmp, 4, 1, texttmp);
-        fwrite(prepderefinst, 2, 1, texttmp);
-        fwrite(subtoebxinst, 2, 1, texttmp);
-        fwrite(&tmp, 4, 1, texttmp);
-        fwrite(setderefinst, 2, 1, texttmp);
+        fwrite(&tmp, 4, 1, out);
+        fwrite(prepderefinst, 2, 1, out);
+        fwrite(subtoebxinst, 2, 1, out);
+        fwrite(&tmp, 4, 1, out);
+        fwrite(setderefinst, 2, 1, out);
     }
 
     return tok_next();
 }
 
 void patch_fwd(const uint32_t patchloc) {
-    uint32_t tmp = ftell(texttmp) - patchloc;
-    fseek(texttmp, (patchloc - 4), SEEK_SET);
-    fwrite(&tmp, 4, 1, texttmp);
-    fseek(texttmp, 0, SEEK_END);
+    uint32_t tmp = ftell(out) - patchloc;
+    fseek(out, (patchloc - 4), SEEK_SET);
+    fwrite(&tmp, 4, 1, out);
+    fseek(out, 0, SEEK_END);
 }
 
 void patch_back(const uint32_t loopstart, const uint32_t patchloc) {
-    fwrite(&jmpinst, 1, 1, texttmp);
-    uint32_t tmp = loopstart - ftell(texttmp);
+    fwrite(&jmpinst, 1, 1, out);
+    uint32_t tmp = loopstart - ftell(out);
     tmp -= 4;
-    fwrite(&tmp, 4, 1, texttmp);
+    fwrite(&tmp, 4, 1, out);
 
     patch_fwd(patchloc);
 }
@@ -362,9 +349,9 @@ uint32_t control_flow_block() {
     uint32_t token = tok_next();
     compile_expr(token);
     
-    fwrite(condjumpinst, 8, 1, texttmp);
+    fwrite(condjumpinst, 8, 1, out);
     
-    uint32_t jumppos = ftell(texttmp);
+    uint32_t jumppos = ftell(out);
     token = tok_next();
     compile_stmt(token);
 
@@ -375,11 +362,11 @@ void compile_stmt(const uint32_t ttoken) {
     uint32_t token = ttoken;
     while(token != TOK_BLK_END) {
         if(tok_is_call) {
-            fwrite(&callinst, 1, 1, texttmp);
+            fwrite(&callinst, 1, 1, out);
             uint32_t i = findfunction(token);
-            uint32_t tmp = i - ftell(texttmp);
+            uint32_t tmp = i - ftell(out);
             tmp -= 4;
-            fwrite(&tmp, 4, 1, texttmp);
+            fwrite(&tmp, 4, 1, out);
             tok_next();
             token = tok_next();
         } else {
@@ -388,7 +375,7 @@ void compile_stmt(const uint32_t ttoken) {
                     if(token != TOK_WHILE_BEGIN) {
                         token = compile_assign(token);
                     } else {
-                        uint32_t loopstart = ftell(texttmp);
+                        uint32_t loopstart = ftell(out);
                         uint32_t jumppos = control_flow_block();
                         patch_back(loopstart, jumppos);
                         token = tok_next();
@@ -401,7 +388,7 @@ void compile_stmt(const uint32_t ttoken) {
                 }
             } else {
                 token = tok_next();
-                fwrite(&token, 1, 1, texttmp);
+                fwrite(&token, 1, 1, out);
                 tok_next();
                 token = tok_next();
             }
@@ -417,22 +404,26 @@ int main(int argc, char** argv) {
     }
 
     c = fopen(argv[1], "rb");
-    datatmp = fopen("./datatmp", "wb+"); // I'm using files for these to use as little RAM right now. I'd like this to be usable on an embedded processor.
-    texttmp = fopen("./texttmp", "wb+");
     out = fopen(argv[2], "wb");
 
-    functiontable = (uint32_t*)malloc(4);
-    functionaddress = (uint32_t*)malloc(4);
+    symboltable = (uint32_t*)malloc(8);
 
     /* At the moment, the stack pointer only needs 4 bytes for eax when doing operations on variables.
     It'll need more sixe for local variables in the future, but for now we can keep code size down.
     Besides, the generated code from this will be insanely unoptimized. Setting rbx to an address is 10 bytes.
     I know there are optimizations I could make, but right now, I just want the basics. */
 
-    //fwrite(prologue, 6, 1, texttmp);
+    //fwrite(prologue, 6, 1, out);
 
-    fwrite(&ebxsetupinst, 1, 1, texttmp);
-    fwrite(&padding, 1, 4, texttmp);
+    fwrite(elfheader, 52, 1, out);
+    fwrite(textheader, 32, 1, out);
+    fwrite(dataheader, 32, 1, out);
+
+    for(uint32_t i = 0; i < 12; i++) {
+        fwrite(&padding, 1, 1, out);
+    }
+
+
 
     uint32_t token = 0;
     while(1) {
@@ -441,54 +432,38 @@ int main(int argc, char** argv) {
             token = tok_next();
             functionname = token;
 
-            functionamount += 1;
-            functiontable = (uint32_t*)realloc(functiontable, functionamount * 4);
-            functionaddress = (uint32_t*)realloc(functionaddress, functionamount * 4);
-
-            functiontable[functionamount - 1] = functionname;
-            functionaddress[functionamount - 1] = ftell(texttmp);
+            symbolamount += 1;
+            symboltable = (uint32_t*)realloc(symboltable, symbolamount * 8);
+            *(uint32_t*)(symboltable + ((symbolamount - 1) * 8)) = functionname;
+            *(uint32_t*)(symboltable + (((symbolamount - 1) * 8) + 4)) = ftell(out);
 
             tok_next();
             token = tok_next();
             compile_stmt(token);
             //printf("    return;\n}\n\n");
-            fwrite(&returninst, 1, 1, texttmp);
+            fwrite(&returninst, 1, 1, out);
             token = functionname;
             if(token == TOK_START) {
-                //write(terminateinst, 12, 1, texttmp);
+                //write(terminateinst, 12, 1, out);
                 break;
             }
         } else {
             //printf("int ");
             token = tok_next();
             //printf("%d;\n", token);
-            fwrite(&token, 4, 1, datatmp);
-            dataamt += 1;
+            symbolamount += 1;
+            varamt += 1;
+            symboltable = (uint32_t*)realloc(symboltable, symbolamount * 8);
+            *(uint32_t*)(symboltable + ((symbolamount - 1) * 8)) = token;
+            *(uint32_t*)(symboltable + (((symbolamount - 1) * 8) + 4)) = varamt - 1;
             tok_next();
         }
     }
 
-    fwrite(elfheader, 52, 1, out);
-    fwrite(textheader, 32, 1, out);
-    fwrite(dataheader, 32, 1, out);
     //printf("At 0x%x in ELF file.\n", ftell(out));
-    for(uint32_t i = 0; i < 12; i++) {
-        fwrite(&padding, 1, 1, out);
-    }
     //printf("At 0x%x in ELF file.\n", ftell(out));
 
-    fseek(texttmp, 0, SEEK_END);
-    uint32_t textlen = ftell(texttmp);
-    fseek(texttmp, 0, SEEK_SET);
-
-    fseek(datatmp, 0, SEEK_END);
-    uint32_t datalen = ftell(datatmp);
-
-    for(uint32_t i = 0; i < textlen; i++) {
-        uint8_t code;
-        fread(&code, 1, 1, texttmp);
-        fwrite(&code, 1, 1, out);
-    }
+    uint32_t textlen = (ftell(out) - 0x80);
 
     uint32_t datapos = ftell(out);
     if((datapos % 4) != 0) {
@@ -500,9 +475,9 @@ int main(int argc, char** argv) {
 
     uint32_t startloc = findfunction(TOK_START);
     fseek(out, 24, SEEK_SET);
-    uint32_t tmp = getnewpos((0x80 + startloc));
+    uint32_t tmp = getnewpos(startloc);
     fwrite(&tmp, 4, 1, out);
-    fseek(out, ((0x80 + startloc) + 1), SEEK_SET);
+    fseek(out, (startloc + 1), SEEK_SET);
     tmp = getnewpos(datapos);
     fwrite(&tmp, 4, 1, out);
     fseek(out, (52 + 32 + 4), SEEK_SET);
@@ -517,13 +492,13 @@ int main(int argc, char** argv) {
     fwrite(&datalen, 4, 1, out);
 
     fseek(out, datapos, SEEK_SET);
-    for(uint32_t i = 0; i < (4 * dataamt); i++) {
+    for(uint32_t i = 0; i < (4 * varamt); i++) {
         fwrite(&padding, 1, 1, out);
     }
 
     fclose(c);
     fclose(datatmp);
-    fclose(texttmp);
+    fclose(out);
     fclose(out);
     free(functionaddress);
     free(functiontable);
