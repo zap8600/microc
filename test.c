@@ -137,7 +137,7 @@ void main() {
 
     *(int*) breakstart = 3;
     breakstart = breakstart + 4;
-    *(int*) breakstart = 5
+    *(int*) breakstart = 5;
     
     tmp2 = *(int*) breakstart;
     breakstart = breakstart - 4;
