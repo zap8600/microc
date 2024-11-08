@@ -115,7 +115,7 @@ void main() {
     out2 = 116;
 
     open_filename = & code1;
-    open_flags = 0100;
+    open_flags = 0;
     open_mode = 0;
     open();
     c = open_return;
@@ -128,10 +128,19 @@ void main() {
     close_fd = c;
     close();
 
-    write_fd = 1;
+    open_filename = & out1;
+    open_flags = 0100;
+    open_mode = 1;
+    open();
+    out = open_return;
+
+    write_fd = out;
     write_buf = & characters;
     write_count = 1;
     write();
+
+    close_fd = out;
+    close();
 }
 
 void _start() {
