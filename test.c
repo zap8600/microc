@@ -129,7 +129,7 @@ void main() {
     brk();
     breakstart = brk_return;
 
-    breakcurrent = breakstart + 8;
+    breakcurrent = breakstart + 9;
 
     brk_break = breakcurrent;
     brk();
