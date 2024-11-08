@@ -454,6 +454,10 @@ int main(int argc, char** argv) {
             symbolamount += 1;
             varamt += 1;
             symboltable = (uint32_t*)realloc(symboltable, symbolamount * 8);
+            printf("%d\n", token);
+            printf("%d\n", varamt);
+            printf("0x%x\n", (symboltable + ((symbolamount - 1) * 8)));
+            printf("0x%x\n", (symboltable + (((symbolamount - 1) * 8) + 4)));
             *(uint32_t*)(symboltable + ((symbolamount - 1) * 8)) = token;
             *(uint32_t*)(symboltable + (((symbolamount - 1) * 8) + 4)) = varamt - 1;
             tok_next();
