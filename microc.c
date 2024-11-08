@@ -158,7 +158,7 @@ uint32_t getnewpos(const uint32_t bytes) {
 
 uint32_t findvar(const uint32_t token) {
     uint32_t i = 0;
-    while(i < symbolamount) {
+    while(i <= symbolamount) {
         uint32_t var = *(uint32_t*)(symboltable + (i * 8));
         if(var == token) break;
         i++;
@@ -175,7 +175,7 @@ uint32_t findvar(const uint32_t token) {
 
 uint32_t findfunction(const uint32_t token) {
     uint32_t i = 0;
-    while(i < symbolamount) {
+    while(i <= symbolamount) {
         uint32_t function = *(uint32_t*)(symboltable + (i * 8));
         if(function == token) break;
         i++;
