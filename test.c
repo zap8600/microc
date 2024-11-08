@@ -124,7 +124,6 @@ void getch() {
         ch = 59;
     }
     if( semi != 1){
-        read_fd = c;
         read_buf = &ch;
         read_count = 1;
         read();
@@ -224,6 +223,12 @@ void compilestmt() {
             lseek_offset = 0;
             lseek_whence = 1;
             lseek();
+            tmp = findsymbol_return - lseek_return;
+            tmp = tmp - 4;
+            write_count = 4;
+            write();
+            toknext();
+            toknext();
         }
     }
 }
@@ -266,9 +271,10 @@ void main() {
     brk_break = breakcurrent;
     brk();
 
+    read_fd = c;
     lseek_fd = out;
-
     write_fd = out;
+    
     write_buf = & tmp;
     write_count = 4;
 
