@@ -116,8 +116,7 @@ int code3;
 int out1;
 int out2;
 
-int tmp1;
-int tmp2;
+int tmp;
 void main() {
     code1 = 1634545454;
     code2 = 1663987305;
@@ -126,26 +125,38 @@ void main() {
     out1 = 1970220846;
     out2 = 116;
 
+    open_filename = & code1;
+    open_flags = 0;
+    open_mode = 0;
+    open();
+    c = open_return;
+
+    open_filename = & out1;
+    open_flags = 65;
+    open_mode = 493;
+    open();
+    out = open_return;
+
     brk_break = 0;
     brk();
     breakstart = brk_return;
+    symboltable = breakstart;
 
     breakcurrent = breakstart + 8;
-
     brk_break = breakcurrent;
     brk();
 
-    *(int*) breakstart = 3;
-    breakstart = breakstart + 4;
-    *(int*) breakstart = 5;
-    
-    tmp2 = *(int*) breakstart;
-    breakstart = breakstart - 4;
-    tmp1 = *(int*) breakstart;
+    write_fd = out;
+    write_buf = & tmp;
+    write_count = 4;
 
-    breakcurrent = breakstart;
-    brk_break = breakcurrent;
-    brk();
+    tmp = 1129071999;
+    write();
+    tmp = 65793;
+    write();
+    tmp = 0;
+    write();
+    //
 }
 
 void _start() {
