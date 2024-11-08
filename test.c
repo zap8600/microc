@@ -36,8 +36,28 @@ void syscall() {
     asm 129; asm 235; asm 4; asm 0; asm 0; asm 0;
 }
 
+int exit_errorcode;
+void exit() {
+    syscall_NR = 1;
+    syscall_arg0 = exit_errorcode;
+    syscall();
+}
+
+int read_fd;
+int read_buf;
+int read_count;
+int read_return;
+void read() {
+    syscall_NR = 3;
+    syscall_arg0 = read_fd;
+    syscall_arg1 = read_buf;
+    syscall_arg2 = read_count;
+    syscall();
+    read_return = syscall_return;
+}
+
 int write_fd;
-int write_ptr;
+int write_buf;
 int write_count;
 int write_return;
 void write() {
@@ -49,8 +69,27 @@ void write() {
     write_return = syscall_return;
 }
 
-int firstbreak;
-int currentbreak;
+int open_filename;
+int open_flags;
+int open_mode;
+int open_return;
+void open() {
+    syscall_NR = 5;
+    syscall_arg0 = open_filename;
+    syscall_arg1 = open_flags;
+    syscall_arg2 = open_mode;
+    syscall();
+    open_return = syscall_return;
+}
+
+int close_fd;
+int close_return;
+void close() {
+    syscall_NR = 6;
+    syscall_arg0 = close_fd;
+    syscall();
+    close_return = syscall_return;
+}
 
 int brk_addr;
 int brk_return;
@@ -61,49 +100,15 @@ void brk() {
     brk_return; = syscall_return;
 }
 
-int sbrk_increment;
-int sbrk_return;
-void sbrk() {
-    if( firstbreak == 0 ){
-        brk_addr = 0;
-        brk();
-        firstbreak = brk_return;
-    }
-    brk_addr = brk_break + sbrk_increment;
-    brk();
-    sbrk_return = brk_return;
-}
+int breakstart;
+int symboltable;
+int symbolamount;
 
-int malloc_size;
-int malloc_tmp;
-int malloc_return;
-void malloc() {
-    sbrk_increment = 0;
-    sbrk();
-    malloc_return = sbrk_return;
-    sbrk_increment = malloc_size;
-    sbrk();
-    malloc_tmp = sbrk_return;
+int c;
+int out;
 
-    if( tmp == 4294967295 ){
-        malloc_return = 0;
-    }
-    if( tmp != 4294967295 ){
-
-    }
-}
-
-int msg;
 void main() {
-    itoa_num = 256 * 4;
-    itoa_buf = & msg;
-    itoa();
-
-    syscall_NR = 4;
-    syscall_arg0 = 1;
-    syscall_arg1 = & msg;
-    syscall_arg2 = 4;
-    syscall();
+    //
 }
 
 void _start() {
@@ -122,7 +127,6 @@ void _start() {
 
     main();
 
-    syscall_NR = 1;
-    syscall_arg0 = 0;
-    syscall();
+    exit_errorcode = 0;
+    exit();
 }
