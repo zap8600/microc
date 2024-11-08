@@ -497,10 +497,7 @@ int main(int argc, char** argv) {
     }
 
     fclose(c);
-    fclose(datatmp);
     fclose(out);
-    fclose(out);
-    free(functionaddress);
-    free(functiontable);
+    free(symboltable);
     return 0;
 }
