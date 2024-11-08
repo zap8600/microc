@@ -91,15 +91,6 @@ void close() {
     close_return = syscall_return;
 }
 
-int brk_addr;
-int brk_return;
-void brk() {
-    syscall_NR = 45;
-    syscall_arg0 = brk_addr;
-    syscall();
-    brk_return; = syscall_return;
-}
-
 int breakstart;
 int symboltable;
 int symbolamount;
