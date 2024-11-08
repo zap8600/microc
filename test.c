@@ -91,6 +91,18 @@ void close() {
     close_return = syscall_return;
 }
 
+int lseek_fd;
+int lseek_offset;
+int lseek_whence;
+int lseek_return;
+void lseek() {
+    syscall_arg0 = lseek_fd;
+    syscall_arg1 = lseek_offset;
+    syscall_arg2 = lseek_whence;
+    syscall();
+    lseek_return = syscall_return;
+}
+
 int brk_break;
 int brk_return;
 void brk() {
@@ -161,6 +173,39 @@ int symboltable;
 int symbolamount;
 int varamt;
 
+int findsymbol_token;
+int findsymbol_i;
+int findsymbol_isub;
+int findsymbol_return;
+void findsymbol() {
+    findsymbol_i = 0;
+    findsymbol_isub = 0;
+    while( findsymbol_i < symbolamount ){
+        symboltable = symboltable + ( i * 8 );
+        findsymbol_return = *(int*) symboltable;
+        if( findsymbol_return == findsymbol_token ){
+            findsymbol_isub = symbolamount - findsymbol_i;
+            findsymbol_i = symbolamount - 1;
+        }
+        symboltable = breakstart;
+        findsymbol_i = findsymbol_i + 1;
+    }
+    findsymbol_i = findsymbol_i - findsymbol_isub;
+    if( findsymbol_i >= symbolamount ){
+        close_fd = c;
+        close();
+        close_fd = out;
+        close();
+        brk_break = breakstart;
+        brk();
+        exit_errorcode = 1;
+        exit();
+    }
+    symboltable = symboltable + ( ( i * 8 ) + 4 );
+    findsymbol_return = *(int*) symboltable;
+    symboltable = breakstart;
+}
+
 int out;
 
 int tmp;
@@ -174,6 +219,11 @@ void compilestmt() {
             tmp = 232;
             write_count = 1;
             write();
+            findsymbol_token = toknext_return;
+            findsymbol();
+            lseek_offset = 0;
+            lseek_whence = 1;
+            lseek();
         }
     }
 }
@@ -215,6 +265,8 @@ void main() {
     breakcurrent = breakstart + 8;
     brk_break = breakcurrent;
     brk();
+
+    lseek_fd = out;
 
     write_fd = out;
     write_buf = & tmp;
