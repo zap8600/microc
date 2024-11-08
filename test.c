@@ -117,7 +117,6 @@ int out1;
 int out2;
 
 int tmp1;
-int tmp2;
 void main() {
     code1 = 1634545454;
     code2 = 1663987305;
@@ -136,11 +135,7 @@ void main() {
     brk();
 
     *(int*) breakstart = 3;
-    breakstart + 4;
-    *(int*) breakstart = 5;
 
-    tmp2 = *(int*) breakstart;
-    breakstart - 4;
     tmp1 = *(int*) breakstart;
 
     breakcurrent = breakstart;
