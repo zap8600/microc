@@ -63,7 +63,7 @@ int write_return;
 void write() {
     syscall_NR = 4;
     syscall_arg0 = write_fd;
-    syscall_arg1 = write_ptr;
+    syscall_arg1 = write_buf;
     syscall_arg2 = write_count;
     syscall();
     write_return = syscall_return;
