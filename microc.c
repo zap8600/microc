@@ -434,8 +434,8 @@ int main(int argc, char** argv) {
 
             symbolamount += 1;
             symboltable = (uint32_t*)realloc(symboltable, symbolamount * 8);
-            symboltable[(i * 2) - 2] = functionname;
-            symboltable[(i * 2) - 1] = ftell(out);
+            symboltable[(symbolamount * 2) - 2] = functionname;
+            symboltable[(symbolamount * 2) - 1] = ftell(out);
 
             tok_next();
             token = tok_next();
