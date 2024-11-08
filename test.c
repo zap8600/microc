@@ -209,10 +209,36 @@ int out;
 
 int tmp;
 
+void compileunary() {
+    if( toknext_return != 4288806029 ){
+        //
+    }
+    if( toknext_return == 4288806029 ){
+        tmp = 50049;
+        write_count = 2;
+        write();
+        //
+    }
+}
+
 void compilestmt() {
     while( toknext_return != 77 ){
         if( toknext_tokiscall != 1 ){
-            //
+            if( toknext_return != 5631 ){
+                if( toknext_return != 6232 ){
+                    if( toknext_return != 7723522 ){
+                        //
+                    }
+                }
+            }
+            if( toknext_return == 5631 ){
+                toknext();
+                tmp = toknext_return;
+                write_count = 1;
+                write();
+                toknext();
+                toknext();
+            }
         }
         if( toknext_tokiscall == 1 ){
             tmp = 232;
