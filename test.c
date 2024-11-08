@@ -107,8 +107,40 @@ int symbolamount;
 int c;
 int out;
 
+int code1;
+int code2;
+int code3;
+
+int out1;
+int out2;
+
+int characters;
 void main() {
-    //
+    code1 = 1634545454;
+    code2 = 1663987305;
+    code3 = 0;
+
+    out1 = 1970220846;
+    out2 = 116;
+
+    open_filename = & code1;
+    open_flags = 0100;
+    open_mode = 0;
+    open();
+    c = open_return;
+
+    read_fd = c;
+    read_buf = & characters;
+    read_count = 1;
+    read();
+
+    close_fd = c;
+    close();
+
+    write_fd = 1;
+    write_buf = & characters;
+    write_count = 1;
+    write();
 }
 
 void _start() {
