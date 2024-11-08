@@ -488,6 +488,7 @@ int main(int argc, char** argv) {
     fwrite(&textlen, 4, 1, out);
     fwrite(&textlen, 4, 1, out);
     fseek(out, (52 + 32 + 16), SEEK_SET);
+    uint32_t datalen = varamt * 4;
     fwrite(&datalen, 4, 1, out);
     fwrite(&datalen, 4, 1, out);
 
