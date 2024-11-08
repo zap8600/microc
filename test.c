@@ -91,7 +91,18 @@ void close() {
     close_return = syscall_return;
 }
 
+int brk_break;
+int brk_return;
+void brk() {
+    syscall_NR = 45;
+    syscall_arg0 = brk_break;
+    syscall();
+    brk_return = syscall_return;
+}
+
 int breakstart;
+int breakcurrent;
+
 int symboltable;
 int symbolamount;
 
@@ -105,7 +116,8 @@ int code3;
 int out1;
 int out2;
 
-int characters;
+int tmp1;
+int tmp2;
 void main() {
     code1 = 1634545454;
     code2 = 1663987305;
@@ -114,33 +126,26 @@ void main() {
     out1 = 1970220846;
     out2 = 116;
 
-    open_filename = & code1;
-    open_flags = 0;
-    open_mode = 0;
-    open();
-    c = open_return;
+    brk_break = 0;
+    brk();
+    breakstart = brk_return;
 
-    read_fd = c;
-    read_buf = & characters;
-    read_count = 1;
-    read();
+    breakcurrent = breakstart + 8;
 
-    close_fd = c;
-    close();
+    brk_break = breakcurrent;
+    brk();
 
-    open_filename = & out1;
-    open_flags = 65;
-    open_mode = 493;
-    open();
-    out = open_return;
+    *(int*) breakstart = 3;
+    breakstart + 4;
+    *(int*) breakstart = 5;
 
-    write_fd = out;
-    write_buf = & characters;
-    write_count = 1;
-    write();
+    tmp2 = *(int*) breakstart;
+    breakstart - 4;
+    tmp1 = *(int*) breakstart;
 
-    close_fd = out;
-    close();
+    breakcurrent = breakstart;
+    brk_break = breakcurrent;
+    brk();
 }
 
 void _start() {
@@ -158,7 +163,4 @@ void _start() {
     asm 16;
 
     main();
-
-    exit_errorcode = 0;
-    exit();
 }
