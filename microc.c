@@ -163,7 +163,7 @@ uint32_t findvar(const uint32_t token) {
         if(var == token) break;
         i++;
     }
-    if(i >= symbolamount) { // Sucks to suck
+    if(i > symbolamount) { // Sucks to suck
         fprintf(stderr, "Error: variable hasn't been defined yet!: %d\n", token);
         fclose(c);
         fclose(out);
@@ -180,7 +180,7 @@ uint32_t findfunction(const uint32_t token) {
         if(function == token) break;
         i++;
     }
-    if(i >= symbolamount) { // Sucks to suck
+    if(i > symbolamount) { // Sucks to suck
         fprintf(stderr, "Error: function hasn't been defined yet!: %d\n", token);
         fclose(c);
         fclose(out);
