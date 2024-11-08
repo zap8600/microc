@@ -130,7 +130,7 @@ void main() {
 
     open_filename = & out1;
     open_flags = 65;
-    open_mode = 1411;
+    open_mode = 493;
     open();
     out = open_return;
 
