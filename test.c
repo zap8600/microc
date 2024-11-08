@@ -159,8 +159,24 @@ int breakcurrent;
 
 int symboltable;
 int symbolamount;
+int varamt;
 
 int out;
+
+int tmp;
+
+void compilestmt() {
+    while( toknext_return != 77 ){
+        if( toknext_tokiscall != 1 ){
+            //
+        }
+        if( toknext_tokiscall == 1 ){
+            tmp = 232;
+            write_count = 1;
+            write();
+        }
+    }
+}
 
 int code1;
 int code2;
@@ -169,8 +185,8 @@ int code3;
 int out1;
 int out2;
 
-int tmp;
-int token;
+int functionname;
+int breakloop;
 void main() {
     code1 = 1634545454;
     code2 = 1663987305;
@@ -269,7 +285,48 @@ void main() {
     write();
     write();
 
-    
+    while( breakloop == 0 ){
+        toknext();
+        if( toknext_return != 6388 ){
+            toknext();
+            functionname = toknext_return;
+
+            symbolamount = symbolamount + 1;
+            breakcurrent = breakstart + ( symbolamount * 8 );
+            brk_break = breakcurrent;
+            brk();
+            symboltable = symboltable + ( ( ( symbolamount * 2 ) - 2 ) * 4 );
+            *(int*) symboltable = token;
+            symboltable = symboltable + 4;
+            *(int*) symboltable = varamt - 1;
+            symboltable = breakstart;
+
+            toknext();
+            toknext();
+            compilestmt();
+
+            tmp = 89;
+            write_count = 1;
+            write();
+
+            if( functionname = 544362713 ){
+                breakloop = 1;
+            }
+        }
+        if( toknext_return == 6388 ){
+            toknext();
+            symbolamount = symbolamount + 1;
+            varamt = varamt + 1;
+            breakcurrent = breakstart + ( symbolamount * 8 );
+            brk_break = breakcurrent;
+            brk();
+            symboltable = symboltable + ( ( ( symbolamount * 2 ) - 2 ) * 4 );
+            *(int*) symboltable = token;
+            symboltable = symboltable + 4;
+            *(int*) symboltable = varamt - 1;
+            symboltable = breakstart;
+        }
+    }
 }
 
 void _start() {
