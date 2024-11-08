@@ -100,13 +100,66 @@ void brk() {
     brk_return = syscall_return;
 }
 
+
+
+int c;
+
+int semi;
+int ch;
+void getch() {
+    if( semi == 1 ){
+        semi = 0;
+        ch = 59;
+    }
+    if( semi != 1){
+        read_fd = c;
+        read_buf = &ch;
+        read_count = 1;
+        read();
+
+        if( ch == 59 ){
+            semi = 1;
+            ch = 0;
+        }
+    }
+}
+
+int toknext_tokisnum;
+int toknext_tokiscall;
+int toknext_lasttwo;
+int toknext_return;
+void toknext() {
+    toknext_return = 0;
+    toknext_lasttwo = 0;
+    toknext_tokisnum = 0;
+    toknext_tokiscall = 0;
+
+    getch();
+    while( ch <= 32 ){
+        getch();
+    }
+
+    if( ch <= 57 ){
+        toknext_tokisnum = 1;
+    }
+
+    while( ch > 32 ){
+        toknext_lasttwo = ( ( toknext_lasttwo << 8 ) | ch ) & 65535;
+        toknext_return = ( 10 * toknext_return ) + ( ( ch - 48 ) & 255 );
+        getch();
+    }
+
+    if( toknext_lasttwo == 10281 ){
+        toknext_tokiscall = 1;
+    }
+}
+
 int breakstart;
 int breakcurrent;
 
 int symboltable;
 int symbolamount;
 
-int c;
 int out;
 
 int code1;
@@ -117,6 +170,7 @@ int out1;
 int out2;
 
 int tmp;
+int token;
 void main() {
     code1 = 1634545454;
     code2 = 1663987305;
@@ -156,7 +210,66 @@ void main() {
     write();
     tmp = 0;
     write();
-    //
+    write();
+    tmp = 3145760;
+    write();
+    tmp = 1;
+    write();
+    tmp = 0;
+    write();
+    tmp = 52;
+    write();
+    tmp = 0;
+    write();
+    write();
+    tmp = 2097204;
+    write();
+    tmp = 2;
+    write();
+    tmp = 0;
+    write();
+
+    tmp = 1;
+    write();
+    tmp = 128;
+    write();
+    tmp = 134512768;
+    write();
+    tmp = 0;
+    write();
+    write();
+    write();
+    tmp = 5;
+    write();
+    tmp = 16;
+    write();
+
+    tmp = 1;
+    write();
+    tmp = 0;
+    write();
+    write();
+    write();
+    write();
+    write();
+    tmp = 7;
+    write();
+    tmp = 16;
+    write();
+
+    tmp = 0;
+    write();
+    write();
+    write();
+    write();
+    write();
+    write();
+    write();
+    write();
+    write();
+    write();
+
+    
 }
 
 void _start() {
@@ -174,4 +287,7 @@ void _start() {
     asm 16;
 
     main();
+
+    exit_errorcode = 0;
+    exit();
 }
