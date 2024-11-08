@@ -129,8 +129,8 @@ void main() {
     close();
 
     open_filename = & out1;
-    open_flags = 0100;
-    open_mode = 1;
+    open_flags = 65;
+    open_mode = 1130;
     open();
     out = open_return;
 
