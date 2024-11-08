@@ -158,36 +158,36 @@ uint32_t getnewpos(const uint32_t bytes) {
 
 uint32_t findvar(const uint32_t token) {
     uint32_t i = 0;
-    while(i <= symbolamount) {
-        uint32_t var = *(uint32_t*)(symboltable + (i * 8));
+    while(i < symbolamount) {
+        uint32_t var = symboltable[i * 2];
         if(var == token) break;
         i++;
     }
-    if(i > symbolamount) { // Sucks to suck
+    if(i >= symbolamount) { // Sucks to suck
         fprintf(stderr, "Error: variable hasn't been defined yet!: %d\n", token);
         fclose(c);
         fclose(out);
         free(symboltable);
         exit(1);
     }
-    return *(uint32_t*)(symboltable + ((i * 8) + 4));
+    return symboltable[(i * 2) + 1];
 }
 
 uint32_t findfunction(const uint32_t token) {
     uint32_t i = 0;
-    while(i <= symbolamount) {
-        uint32_t function = *(uint32_t*)(symboltable + (i * 8));
+    while(i < symbolamount) {
+        uint32_t function = symboltable[i * 2];
         if(function == token) break;
         i++;
     }
-    if(i > symbolamount) { // Sucks to suck
+    if(i >= symbolamount) { // Sucks to suck
         fprintf(stderr, "Error: function hasn't been defined yet!: %d\n", token);
         fclose(c);
         fclose(out);
         free(symboltable);
         exit(1);
     }
-    return *(uint32_t*)(symboltable + ((i * 8) + 4));
+    return symboltable[(i * 2) + 1];
 }
 
 void compile_expr(const uint32_t ttoken);
@@ -454,13 +454,8 @@ int main(int argc, char** argv) {
             symbolamount += 1;
             varamt += 1;
             symboltable = (uint32_t*)realloc(symboltable, symbolamount * 8);
-            printf("%d\n", token);
-            printf("%d\n", varamt);
-            printf("0x%x\n", symboltable);
-            printf("0x%x\n", (symboltable + 4));
-            printf("0x%x\n", (symboltable + 8));
-            *(uint32_t*)(symboltable + ((symbolamount - 1) * 8)) = token;
-            *(uint32_t*)(symboltable + (((symbolamount - 1) * 8) + 4)) = varamt - 1;
+            symboltable[(symbolamount * 2) - 2] = token;
+            symboltable[(symbolamount * 2) - 1] = varamt - 1;
             tok_next();
         }
     }
