@@ -202,19 +202,26 @@ uint32_t findvar(const uint32_t token) {
     return symboltable[(i * 2) + 1];
 }
 
-uint32_t findfunction(const uint32_t token) {
+bool notfound;
+uint32_t findfunction(const uint32_t token, bool error) {
     uint32_t i = 0;
+    notfound = false;
     while(i < symbolamount) {
         uint32_t function = symboltable[i * 2];
         if(function == token) break;
         i++;
     }
     if(i >= symbolamount) { // Sucks to suck
-        fprintf(stderr, "Error: function hasn't been defined yet!: %d\n", token);
-        fclose(c);
-        fclose(out);
-        free(symboltable);
-        exit(1);
+        if(error) {
+            fprintf(stderr, "Error: function hasn't been defined yet!: %d\n", token);
+            fclose(c);
+            fclose(out);
+            free(symboltable);
+            exit(1);
+        } else {
+            notfound = true;
+            return 0;
+        }
     }
     return symboltable[(i * 2) + 1];
 }
@@ -392,7 +399,7 @@ void compile_stmt(const uint32_t ttoken) {
     while(token != TOK_BLK_END) {
         if(tok_is_call) {
             fwrite(&callinst, 1, 1, out);
-            uint32_t i = findfunction(token);
+            uint32_t i = findfunction(token, true);
             uint32_t tmp = i - ftell(out);
             tmp -= 4;
             fwrite(&tmp, 4, 1, out);
@@ -461,27 +468,33 @@ int main(int argc, char** argv) {
 
             symbolamount += 1;
             symboltable = (uint32_t*)realloc(symboltable, symbolamount * 8);
-            symboltable[(symbolamount * 2) - 2] = functionname;
-            symboltable[(symbolamount * 2) - 1] = ftell(out);
 
             token = tok_next();
             if(token == TOK_SEMI) {
                 // This is a little hack to support declaring a function before its code starts.
                 // Ideally, I should make a little list of anything that calls this function after this.
                 // However, this will have to do for now.
+                symboltable[(symbolamount * 2) - 2] = functionname;
                 fwrite(&jmpinst, 1, 1, out);
                 for(uint32_t i = 0; i < 4; i++) {
                     fwrite(&padding, 1, 1, out);
                 }
-            }
-            token = tok_next();
-            compile_stmt(token);
-            //printf("    return;\n}\n\n");
-            fwrite(&returninst, 1, 1, out);
-            token = functionname;
-            if(token == TOK_START) {
-                //write(terminateinst, 12, 1, out);
-                break;
+                symboltable[(symbolamount * 2) - 1] = ftell(out);
+            } else {
+                uint32_t i = findfunction(functionname, false);
+                if(!notfound) {
+                    patch_fwd(i);
+                } else {
+                    symboltable[(symbolamount * 2) - 2] = functionname;
+                    symboltable[(symbolamount * 2) - 1] = ftell(out);
+                }
+                token = tok_next();
+                compile_stmt(token);
+                fwrite(&returninst, 1, 1, out);
+                token = functionname;
+                if(token == TOK_START) {
+                    break;
+                }
             }
         } else {
             //printf("int ");
@@ -509,7 +522,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    uint32_t startloc = findfunction(TOK_START);
+    uint32_t startloc = findfunction(TOK_START, true);
     fseek(out, 24, SEEK_SET);
     uint32_t tmp = getnewpos(startloc);
     fwrite(&tmp, 4, 1, out);

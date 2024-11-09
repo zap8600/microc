@@ -209,6 +209,8 @@ int out;
 
 int tmp;
 
+void compileexpr();
+
 void compileunary() {
     if( toknext_return != 4288806029 ){
         //
@@ -220,6 +222,8 @@ void compileunary() {
         //
     }
 }
+
+void compilestmt();
 
 void compilestmt() {
     while( toknext_return != 77 ){
