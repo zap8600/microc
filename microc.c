@@ -464,7 +464,16 @@ int main(int argc, char** argv) {
             symboltable[(symbolamount * 2) - 2] = functionname;
             symboltable[(symbolamount * 2) - 1] = ftell(out);
 
-            tok_next();
+            token = tok_next();
+            if(token == TOK_SEMI) {
+                // This is a little hack to support declaring a function before its code starts.
+                // Ideally, I should make a little list of anything that calls this function after this.
+                // However, this will have to do for now.
+                fwrite(&jmpinst, 1, 1, out);
+                for(uint32_t i = 0; i < 4; i++) {
+                    fwrite(&padding, 1, 1, out);
+                }
+            }
             token = tok_next();
             compile_stmt(token);
             //printf("    return;\n}\n\n");
