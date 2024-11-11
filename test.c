@@ -210,7 +210,7 @@ void findsymbol() {
         }
     }
 
-    symboltable = breakstart + ( ( i * 8 ) + 4 );
+    symboltable = breakstart + ( ( findsymbol_i * 8 ) + 4 );
     findsymbol_return = *(int*) symboltable;
 }
 
