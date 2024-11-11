@@ -216,7 +216,7 @@ void findsymbol() {
 
 int tmp;
 
-//void compileexpr();
+void compileexpr();
 
 void compileunary() {
     if( toknext_return != 4288806029 ){
