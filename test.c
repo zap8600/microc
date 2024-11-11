@@ -123,7 +123,7 @@ void getch() {
         semi = 0;
         ch = 59;
     }
-    if( semi != 1){
+    if( semi != 1 ){
         read_buf = & ch;
         read_count = 1;
         read();
