@@ -122,12 +122,16 @@ uint32_t* symboltable;
 uint32_t varamt;
 
 bool semi;
+int line = 1;
 int getch() {
     if(semi) {
         semi = false;
         return 59;
     } else {
         int ch = getc(c);
+        if(ch == '\n') {
+            line += 1;
+        }
         if(ch == 59) {
             semi = true;
             ch = 0;
@@ -194,7 +198,7 @@ uint32_t findvar(const uint32_t token) {
         i++;
     }
     if(i >= symbolamount) { // Sucks to suck
-        fprintf(stderr, "Error: variable hasn't been defined yet!: %d\n", token);
+        fprintf(stderr, "Error: variable hasn't been defined yet!: %d at %d\n", token, line);
         fclose(c);
         fclose(out);
         free(symboltable);
