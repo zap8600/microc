@@ -221,20 +221,171 @@ void compileexpr();
 
 void compileunary() {
     if( toknext_return != 4288806029 ){
-        //
+        if( toknext_return != 4294967288 ){
+            if( toknext_return != 4294967286 ){
+                if( toknext_tokisnum == 1 ){
+                    //
+                }
+                if( toknext_tokisnum == 0 ){
+                    //
+                }
+            }
+            if( toknext_return == 4294967286 ){
+                toknext();
+                findsymbol_token = toknext_return;
+                findsymbol_error = 1;
+                findsymbol();
+                tmp = 50049;
+                write_count = 2;
+                write();
+                tmp = findsymbol_return * 4;
+                write_count = 4;
+                write();
+                tmp = 905;
+                write_count = 2;
+                write();
+                tmp = 60289;
+                write();
+                tmp = findsymbol_return * 4;
+                write_count = 4;
+                write();
+            }
+        }
+        if( toknext_return == 4294967288 ){
+            toknext();
+            compileexpr();
+        }
     }
     if( toknext_return == 4288806029 ){
+        toknext();
+        findsymbol_token = toknext_return;
+        findsymbol_error = 1;
+        findsymbol();
         tmp = 50049;
         write_count = 2;
         write();
-        //
+        tmp = findsymbol_return * 4;
+        write_count = 4;
+        write();
+        tmp = 1675;
+        write_count = 2;
+        write();
+        tmp = 60289;
+        write();
+        tmp = findsymbol_return * 4;
+        write_count = 4;
+        write();
+        tmp = 909;
+        write_count = 2;
+        write();
     }
+    toknext();
+}
+
+int dest;
+void compileassign() {
+    if( toknext_return != 4288806029 ){
+        dest = toknext_return;
+        toknext();
+        toknext();
+        compileexpr();
+        findsymbol_token = dest;
+        findsymbol_error = 1;
+        findsymbol();
+        tmp = 50049;
+        write_count = 2;
+        write();
+        tmp = findsymbol_return * 4;
+        write_count = 4;
+        write();
+        tmp = 905;
+        write_count = 2;
+        write();
+        tmp = 60289;
+        write();
+        tmp = findsymbol_return * 4;
+        write_count = 4;
+        write();
+    }
+    if( toknext_return == 4288806029 ){
+        toknext();
+        dest = toknext_return;
+        toknext();
+        toknext();
+        compileexpr();
+        findsymbol_token = dest;
+        findsymbol_error = 1;
+        findsymbol();
+        tmp = 50049;
+        write_count = 2;
+        write();
+        tmp = findsymbol_return * 4;
+        write_count = 4;
+        write();
+        tmp = 1675;
+        write_count = 2;
+        write();
+        tmp = 60289;
+        write();
+        tmp = findsymbol_return * 4;
+        write_count = 4;
+        write();
+        tmp = 1673;
+        write_count = 2;
+        write();
+    }
+    toknext();
 }
 
 void compilestmt();
 
+int patchfwd_patchloc;
+void patchfwd() {
+    lseek_offset = 0;
+    lseek_whence = 1;
+    lseek();
+    tmp = lseek_return - patchfwd_patchloc;
+    lseek_offset = patchfwd_patchloc - 4;
+    lseek_whence = 0;
+    lseek();
+    write_count = 4;
+    write();
+    lseek_offset = 0;
+    lseek_whence = 2;
+    lseek();
+}
+
+int patchback_loopstart;
+void patchback() {
+    tmp = 233;
+    write_count = 1;
+    write();
+    lseek_offset = 0;
+    lseek_whence = 1;
+    lseek();
+    tmp = patchback_loopstart - lseek_return;
+    tmp = tmp - 4;
+    write_count = 4;
+    write();
+
+    patchfwd();
+}
+
+int controlflowblock_return;
 void controlflowblock() {
-    //
+    toknext();
+    compileexpr();
+    tmp = 2215624837;
+    write_count = 4;
+    write();
+    tmp = 0;
+    write();
+    lseek_offset = 0;
+    lseek_whence = 1;
+    lseek();
+    controlflowblock_return = lseek_return;
+    toknext();
+    compile_stmt();
 }
 
 void compilestmt() {
@@ -243,8 +394,24 @@ void compilestmt() {
             if( toknext_return != 5631 ){
                 if( toknext_return != 6232 ){
                     if( toknext_return != 7723522 ){
-                        //
+                        compileassign();
                     }
+                    if( toknext_return == 7723522 ){
+                        lseek_offset = 0;
+                        lseek_whence = 1;
+                        lseek();
+                        patchback_loopstart = lseek_return;
+                        controlflowblock();
+                        patchfwd_patchloc = controlflowblock_return;
+                        patchback();
+                        toknext();
+                    }
+                }
+                if( toknext_return == 6232 ){
+                    controlflowblock();
+                    patchfwd_patchloc = controlflowblock_return;
+                    patchfwd();
+                    toknext();
                 }
             }
             if( toknext_return == 5631 ){
@@ -257,10 +424,11 @@ void compilestmt() {
             }
         }
         if( toknext_tokiscall == 1 ){
-            tmp = 232;
+            tmp = 233;
             write_count = 1;
             write();
             findsymbol_token = toknext_return;
+            findsymbol_error = 1;
             findsymbol();
             lseek_offset = 0;
             lseek_whence = 1;
@@ -395,13 +563,38 @@ void main() {
             brk_break = breakcurrent;
             brk();
             if( toknext_return == 11 ){
-                //
+                symboltable = breakstart + ( ( ( symbolamount * 2 ) - 2 ) * 4 );
+                *(int*) symboltable = token;
+                tmp = 233;
+                write_count = 1;
+                write();
+                tmp = 0;
+                write_count = 4;
+                write();
+                symboltable = symboltable + 4;
+                lseek_offset = 0;
+                lseek_whence = 1;
+                lseek();
+                *(int*) symboltable = lseek_return;
             }
-            symboltable = breakstart + ( ( ( symbolamount * 2 ) - 2 ) * 4 );
-            *(int*) symboltable = token;
-            symboltable = symboltable + 4;
-            *(int*) symboltable = varamt - 1;
-            symboltable = breakstart;
+            if( toknext_return != 11 ){
+                findsymbol_token = toknext_return;
+                findsymbol_error = 0;
+                findsymbol();
+                if( findsymbol_notfound == 0 ){
+                    patchfwd_patchloc = findsymbol_return;
+                    patchfwd();
+                }
+                if( findsymbol_notfound == 1 ){
+                    symboltable = breakstart + ( ( ( symbolamount * 2 ) - 2 ) * 4 );
+                    *(int*) symboltable = toknext_return;
+                    symboltable = symboltable + 4;
+                    lseek_offset = 0;
+                    lseek_whence = 1;
+                    lseek();
+                    *(int*) symboltable = lseek_return;
+                }
+            }
 
             toknext();
             toknext();
