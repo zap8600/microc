@@ -527,7 +527,7 @@ void compileassign() {
     toknext();
 }
 
-//void compilestmt();
+void compilestmt();
 
 int patchfwd_patchloc;
 void patchfwd() {
