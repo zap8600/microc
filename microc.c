@@ -170,7 +170,7 @@ uint32_t tok_next() {
         tok_is_call = true;
     }
 
-    printf("%u, %d at %d at %d\n", token, token, line, characters);
+    printf("%u, %d\n", token, token);
     return token;
 }
 
@@ -238,9 +238,32 @@ void compile_expr(const uint32_t ttoken);
 
 uint32_t compile_unary(const uint32_t ttoken) {
     uint32_t token = ttoken;
-    if(token != TOK_DEREF) {
-        if(token != TOK_LPAREN) {
-            if(token != TOK_ADDR) {
+    if(token == TOK_DEREF && !tok_is_num) {
+        token = tok_next();
+        uint32_t i = findvar(token);
+
+        fwrite(addtoebxinst, 2, 1, out);
+        uint32_t tmp = i * 4;
+        fwrite(&tmp, 4, 1, out);
+        fwrite(prepderefinst, 2, 1, out);
+        fwrite(subtoebxinst, 2, 1, out);
+        fwrite(&tmp, 4, 1, out);
+        fwrite(getderefinst, 2, 1, out);
+    } else {
+        if(token == TOK_LPAREN && !tok_is_num) {
+            token = tok_next();
+            compile_expr(token);
+        } else {
+            if(token == TOK_ADDR && !tok_is_num) {
+                token = tok_next();
+                uint32_t i = findvar(token);
+                fwrite(addtoebxinst, 2, 1, out);
+                uint32_t tmp = i * 4;
+                fwrite(&tmp, 4, 1, out);
+                fwrite(getaddressinst, 2, 1, out);
+                fwrite(subtoebxinst, 2, 1, out);
+                fwrite(&tmp, 4, 1, out);
+            } else {
                 if(tok_is_num) {
                     fwrite(&movinst, 1, 1, out);
                     fwrite(&token, 4, 1, out);
@@ -253,42 +276,7 @@ uint32_t compile_unary(const uint32_t ttoken) {
                     fwrite(subtoebxinst, 2, 1, out);
                     fwrite(&tmp, 4, 1, out);
                 }
-            } else {
-                if(tok_is_num) {
-                    return compile_unary(token);
-                } else {
-                    token = tok_next();
-                    uint32_t i = findvar(token);
-                    fwrite(addtoebxinst, 2, 1, out);
-                    uint32_t tmp = i * 4;
-                    fwrite(&tmp, 4, 1, out);
-                    fwrite(getaddressinst, 2, 1, out);
-                    fwrite(subtoebxinst, 2, 1, out);
-                    fwrite(&tmp, 4, 1, out);
-                }
             }
-        } else {
-            if(tok_is_num) {
-                return compile_unary(token);
-            } else {
-                token = tok_next();
-                compile_expr(token);
-            }
-        }
-    } else {
-        if(tok_is_num) {
-            return compile_unary(token);
-        } else {
-            token = tok_next();
-            uint32_t i = findvar(token);
-
-            fwrite(addtoebxinst, 2, 1, out);
-            uint32_t tmp = i * 4;
-            fwrite(&tmp, 4, 1, out);
-            fwrite(prepderefinst, 2, 1, out);
-            fwrite(subtoebxinst, 2, 1, out);
-            fwrite(&tmp, 4, 1, out);
-            fwrite(getderefinst, 2, 1, out);
         }
     }
     return tok_next();
