@@ -217,7 +217,7 @@ int out;
 
 int tmp;
 
-void compileexpr();
+//void compileexpr();
 
 void compileunary() {
     if( toknext_return != 4288806029 ){
@@ -528,7 +528,7 @@ void compileassign() {
     toknext();
 }
 
-void compilestmt();
+//void compilestmt();
 
 int patchfwd_patchloc;
 void patchfwd() {
