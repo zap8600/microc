@@ -174,35 +174,43 @@ int varamt;
 
 int findsymbol_token;
 int findsymbol_i;
+int findsymbol_error;
 int findsymbol_isub;
+int findsymbol_notfound;
 int findsymbol_return;
 void findsymbol() {
     findsymbol_i = 0;
+    findsymbol_notfound = 0;
     findsymbol_isub = 0;
     while( findsymbol_i < symbolamount ){
-        symboltable = symboltable + ( i * 8 );
+        symboltable = breakstart + ( i * 8 );
         findsymbol_return = *(int*) symboltable;
         if( findsymbol_return == findsymbol_token ){
             findsymbol_isub = symbolamount - findsymbol_i;
             findsymbol_i = symbolamount - 1;
         }
-        symboltable = breakstart;
         findsymbol_i = findsymbol_i + 1;
     }
     findsymbol_i = findsymbol_i - findsymbol_isub;
     if( findsymbol_i >= symbolamount ){
-        close_fd = c;
-        close();
-        close_fd = out;
-        close();
-        brk_break = breakstart;
-        brk();
-        exit_errorcode = 1;
-        exit();
+        if( findsymbol_error == 1 ){
+            close_fd = c;
+            close();
+            close_fd = out;
+            close();
+            brk_break = breakstart;
+            brk();
+            exit_errorcode = 1;
+            exit();
+        }
+        if( findsymbol_error == 0 ){
+            notfound = 1;
+            findsymbol_i = 0;
+        }
     }
-    symboltable = symboltable + ( ( i * 8 ) + 4 );
+
+    symboltable = breakstart + ( ( i * 8 ) + 4 );
     findsymbol_return = *(int*) symboltable;
-    symboltable = breakstart;
 }
 
 int out;
@@ -224,6 +232,10 @@ void compileunary() {
 }
 
 void compilestmt();
+
+void controlflowblock() {
+    //
+}
 
 void compilestmt() {
     while( toknext_return != 77 ){
@@ -295,7 +307,6 @@ void main() {
     brk_break = 0;
     brk();
     breakstart = brk_return;
-    symboltable = breakstart;
 
     breakcurrent = breakstart + 8;
     brk_break = breakcurrent;
@@ -383,7 +394,10 @@ void main() {
             breakcurrent = breakstart + ( symbolamount * 8 );
             brk_break = breakcurrent;
             brk();
-            symboltable = symboltable + ( ( ( symbolamount * 2 ) - 2 ) * 4 );
+            if( toknext_return == 11 ){
+                //
+            }
+            symboltable = breakstart + ( ( ( symbolamount * 2 ) - 2 ) * 4 );
             *(int*) symboltable = token;
             symboltable = symboltable + 4;
             *(int*) symboltable = varamt - 1;

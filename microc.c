@@ -205,7 +205,6 @@ uint32_t findvar(const uint32_t token) {
 bool notfound;
 uint32_t findfunction(const uint32_t token, bool error) {
     uint32_t i = 0;
-    notfound = false;
     while(i < symbolamount) {
         uint32_t function = symboltable[i * 2];
         if(function == token) break;
