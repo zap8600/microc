@@ -254,30 +254,42 @@ uint32_t compile_unary(const uint32_t ttoken) {
                     fwrite(&tmp, 4, 1, out);
                 }
             } else {
-                token = tok_next();
-                uint32_t i = findvar(token);
-                fwrite(addtoebxinst, 2, 1, out);
-                uint32_t tmp = i * 4;
-                fwrite(&tmp, 4, 1, out);
-                fwrite(getaddressinst, 2, 1, out);
-                fwrite(subtoebxinst, 2, 1, out);
-                fwrite(&tmp, 4, 1, out);
+                if(tok_is_num) {
+                    return compile_unary(token);
+                } else {
+                    token = tok_next();
+                    uint32_t i = findvar(token);
+                    fwrite(addtoebxinst, 2, 1, out);
+                    uint32_t tmp = i * 4;
+                    fwrite(&tmp, 4, 1, out);
+                    fwrite(getaddressinst, 2, 1, out);
+                    fwrite(subtoebxinst, 2, 1, out);
+                    fwrite(&tmp, 4, 1, out);
+                }
             }
         } else {
-            token = tok_next();
-            compile_expr(token);
+            if(tok_is_num) {
+                return compile_unary(token);
+            } else {
+                token = tok_next();
+                compile_expr(token);
+            }
         }
     } else {
-        token = tok_next();
-        uint32_t i = findvar(token);
+        if(tok_is_num) {
+            return compile_unary(token);
+        } else {
+            token = tok_next();
+            uint32_t i = findvar(token);
 
-        fwrite(addtoebxinst, 2, 1, out);
-        uint32_t tmp = i * 4;
-        fwrite(&tmp, 4, 1, out);
-        fwrite(prepderefinst, 2, 1, out);
-        fwrite(subtoebxinst, 2, 1, out);
-        fwrite(&tmp, 4, 1, out);
-        fwrite(getderefinst, 2, 1, out);
+            fwrite(addtoebxinst, 2, 1, out);
+            uint32_t tmp = i * 4;
+            fwrite(&tmp, 4, 1, out);
+            fwrite(prepderefinst, 2, 1, out);
+            fwrite(subtoebxinst, 2, 1, out);
+            fwrite(&tmp, 4, 1, out);
+            fwrite(getderefinst, 2, 1, out);
+        }
     }
     return tok_next();
 }
