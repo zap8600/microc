@@ -183,7 +183,7 @@ void findsymbol() {
     findsymbol_notfound = 0;
     findsymbol_isub = 0;
     while( findsymbol_i < symbolamount ){
-        symboltable = breakstart + ( i * 8 );
+        symboltable = breakstart + ( findsymbol_i * 8 );
         findsymbol_return = *(int*) symboltable;
         if( findsymbol_return == findsymbol_token ){
             findsymbol_isub = symbolamount - findsymbol_i;
