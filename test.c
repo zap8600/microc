@@ -219,7 +219,7 @@ int tmp;
 void compileexpr();
 
 void compileunary() {
-    if( toknext_return != 4288806029 ){
+    if( toknext_return != 35 ){
         if( toknext_return != 4294967288 ){
             if( toknext_return != 4294967286 ){
                 if( toknext_tokisnum == 1 ){
