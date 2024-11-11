@@ -806,7 +806,7 @@ void main() {
             brk_break = breakcurrent;
             brk();
             symboltable = symboltable + ( ( ( symbolamount * 2 ) - 2 ) * 4 );
-            *(int*) symboltable = token;
+            *(int*) symboltable = toknext_return;
             symboltable = symboltable + 4;
             *(int*) symboltable = varamt - 1;
             symboltable = breakstart;
