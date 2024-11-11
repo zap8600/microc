@@ -238,9 +238,9 @@ void compile_expr(const uint32_t ttoken);
 
 uint32_t compile_unary(const uint32_t ttoken) {
     uint32_t token = ttoken;
-    if(token != TOK_DEREF) {
-        if(token != TOK_LPAREN) {
-            if(token != TOK_ADDR) {
+    if(token != TOK_DEREF && !tok_is_num) {
+        if(token != TOK_LPAREN && !tok_is_num) {
+            if(token != TOK_ADDR && !tok_is_num) {
                 if(tok_is_num) {
                     fwrite(&movinst, 1, 1, out);
                     fwrite(&token, 4, 1, out);
