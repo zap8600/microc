@@ -308,52 +308,52 @@ void compileexpr() {
     compileunary();
     op = 0;
     if( toknext_return == 4294967293 ){
-        op = 4294967293; // SUB
+        op = 4294967293;
     }
     if( toknext_return == 4294967291 ){
-        op = 4294967291; // ADD
+        op = 4294967291;
     }
     if( toknext_return == 4294967295 ){
-        op = 4294967295; // DIV
+        op = 4294967295;
     }
     if( toknext_return == 4294967285 ){
-        op = 4294967285; // MODULO
+        op = 4294967285;
     }
     if( toknext_return == 4294967289 ){
-        op = 4294967289; // MUL
+        op = 4294967289;
     }
     if( toknext_return == 4294967286 ){
-        op = 4294967286; // AND
+        op = 4294967286;
     }
     if( toknext_return == 76 ){
-        op = 76; // OR
+        op = 76;
     }
     if( toknext_return == 46 ){
-        op = 46; // XOR
+        op = 46;
     }
     if( toknext_return == 132 ){
-        op = 132; // SHL
+        op = 132;
     }
     if( toknext_return == 154 ){
-        op = 154; // SHR
+        op = 154;
     }
     if( toknext_return == 143 ){
-        op = 143; // EQ
+        op = 143;
     }
     if( toknext_return == 4294967159 ){
-        op = 4294967159; // NE
+        op = 4294967159;
     }
     if( toknext_return == 12 ){
-        op = 12; // LT
+        op = 12;
     }
     if( toknext_return == 14 ){
-        op = 14; // GT
+        op = 14;
     }
     if( toknext_return == 133 ){
-        op = 133; // LE
+        op = 133;
     }
     if( toknext_return == 153 ){
-        op = 153; // GE
+        op = 153;
     }
 
     if( op != 0 ){
@@ -451,10 +451,24 @@ void compileexpr() {
             write();
         }
         if( toknext_return == 133 ){
-            op = 133; // LE
+            tmp = 12109881;
+            write_count = 4;
+            write();
+            tmp = 15;
+            write();
+            tmp = 49310;
+            write_count = 2;
+            write();
         }
         if( toknext_return == 153 ){
-            op = 153; // GE
+            tmp = 12109881;
+            write_count = 4;
+            write();
+            tmp = 15;
+            write();
+            tmp = 49309;
+            write_count = 2;
+            write();
         }
     }
 }

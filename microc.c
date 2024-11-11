@@ -317,8 +317,8 @@ void compile_expr(const uint32_t ttoken) {
             case TOK_SHR: fwrite(shrinst, 2, 1, out); break;
             case TOK_EQ: fwrite(compinst, 8, 1, out); fwrite(eqinst, 2, 1, out); break;
             case TOK_NE: fwrite(compinst, 8, 1, out); fwrite(neinst, 2, 1, out); break;
-            case TOK_LT: fwrite(compinst, 8, 1, out); fwrite(ltinst, 2, 1, out);
-            case TOK_GT: fwrite(compinst, 8, 1, out); fwrite(gtinst, 2, 1, out);
+            case TOK_LT: fwrite(compinst, 8, 1, out); fwrite(ltinst, 2, 1, out); break;
+            case TOK_GT: fwrite(compinst, 8, 1, out); fwrite(gtinst, 2, 1, out); break;
             case TOK_LE: fwrite(compinst, 8, 1, out); fwrite(leinst, 2, 1, out); break;
             case TOK_GE: fwrite(compinst, 8, 1, out); fwrite(geinst, 2, 1, out); break;
         }
