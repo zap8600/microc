@@ -794,7 +794,7 @@ void main() {
             write_count = 1;
             write();
 
-            if( functionname = 544362713 ){
+            if( functionname == 544362713 ){
                 breakloop = 1;
             }
         }
