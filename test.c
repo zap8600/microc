@@ -205,7 +205,7 @@ void findsymbol() {
             exit();
         }
         if( findsymbol_error == 0 ){
-            notfound = 1;
+            findsymbol_notfound = 1;
             findsymbol_i = 0;
         }
     }
