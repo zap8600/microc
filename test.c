@@ -115,6 +115,7 @@ void brk() {
 
 
 int c;
+int out;
 
 int semi;
 int ch;
@@ -212,8 +213,6 @@ void findsymbol() {
     symboltable = breakstart + ( ( i * 8 ) + 4 );
     findsymbol_return = *(int*) symboltable;
 }
-
-int out;
 
 int tmp;
 
