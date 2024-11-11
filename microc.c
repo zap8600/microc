@@ -170,7 +170,7 @@ uint32_t tok_next() {
         tok_is_call = true;
     }
 
-    printf("%u\n", token);
+    printf("%u, %d\n", token, token);
     return token;
 }
 
