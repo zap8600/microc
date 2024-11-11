@@ -231,7 +231,7 @@ void compileunary() {
                     write();
                 }
                 if( toknext_tokisnum == 0 ){
-                    findsymbol_token = dest;
+                    findsymbol_token = toknext_return;
                     findsymbol_error = 1;
                     findsymbol();
                     tmp = 50049;
