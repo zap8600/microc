@@ -575,7 +575,7 @@ void controlflowblock() {
     lseek();
     controlflowblock_return = lseek_return;
     toknext();
-    compile_stmt();
+    compilestmt();
 }
 
 void compilestmt() {
