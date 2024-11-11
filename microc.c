@@ -170,7 +170,6 @@ uint32_t tok_next() {
         tok_is_call = true;
     }
 
-    printf("%u, %d\n", token, token);
     return token;
 }
 
@@ -221,7 +220,7 @@ uint32_t findfunction(const uint32_t token, bool error) {
     }
     if(i >= symbolamount) { // Sucks to suck
         if(error) {
-            fprintf(stderr, "Error: function hasn't been defined yet!: %d\n", token);
+            fprintf(stderr, "Error: function hasn't been defined yet!: %d at %d at %d\n", token, line, characters);
             fclose(c);
             fclose(out);
             free(symboltable);
