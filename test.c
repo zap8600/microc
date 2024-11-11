@@ -224,10 +224,31 @@ void compileunary() {
         if( toknext_return != 4294967288 ){
             if( toknext_return != 4294967286 ){
                 if( toknext_tokisnum == 1 ){
-                    //
+                    tmp = 184;
+                    write_count = 1;
+                    write();
+                    tmp = toknext_return;
+                    write_count = 4;
+                    write();
                 }
                 if( toknext_tokisnum == 0 ){
-                    //
+                    findsymbol_token = dest;
+                    findsymbol_error = 1;
+                    findsymbol();
+                    tmp = 50049;
+                    write_count = 2;
+                    write();
+                    tmp = findsymbol_return * 4;
+                    write_count = 4;
+                    write();
+                    tmp = 907;
+                    write_count = 2;
+                    write();
+                    tmp = 60289;
+                    write();
+                    tmp = findsymbol_return * 4;
+                    write_count = 4;
+                    write();
                 }
             }
             if( toknext_return == 4294967286 ){
@@ -241,7 +262,7 @@ void compileunary() {
                 tmp = findsymbol_return * 4;
                 write_count = 4;
                 write();
-                tmp = 905;
+                tmp = 909;
                 write_count = 2;
                 write();
                 tmp = 60289;
@@ -267,7 +288,7 @@ void compileunary() {
         tmp = findsymbol_return * 4;
         write_count = 4;
         write();
-        tmp = 1675;
+        tmp = 13195;
         write_count = 2;
         write();
         tmp = 60289;
@@ -275,11 +296,167 @@ void compileunary() {
         tmp = findsymbol_return * 4;
         write_count = 4;
         write();
-        tmp = 909;
+        tmp = 1675;
         write_count = 2;
         write();
     }
     toknext();
+}
+
+int op;
+void compileexpr() {
+    compileunary();
+    op = 0;
+    if( toknext_return == 4294967293 ){
+        op = 4294967293; // SUB
+    }
+    if( toknext_return == 4294967291 ){
+        op = 4294967291; // ADD
+    }
+    if( toknext_return == 4294967295 ){
+        op = 4294967295; // DIV
+    }
+    if( toknext_return == 4294967285 ){
+        op = 4294967285; // MODULO
+    }
+    if( toknext_return == 4294967289 ){
+        op = 4294967289; // MUL
+    }
+    if( toknext_return == 4294967286 ){
+        op = 4294967286; // AND
+    }
+    if( toknext_return == 76 ){
+        op = 76; // OR
+    }
+    if( toknext_return == 46 ){
+        op = 46; // XOR
+    }
+    if( toknext_return == 132 ){
+        op = 132; // SHL
+    }
+    if( toknext_return == 154 ){
+        op = 154; // SHR
+    }
+    if( toknext_return == 143 ){
+        op = 143; // EQ
+    }
+    if( toknext_return == 4294967159 ){
+        op = 4294967159; // NE
+    }
+    if( toknext_return == 12 ){
+        op = 12; // LT
+    }
+    if( toknext_return == 14 ){
+        op = 14; // GT
+    }
+    if( toknext_return == 133 ){
+        op = 133; // LE
+    }
+    if( toknext_return == 153 ){
+        op = 153; // GE
+    }
+
+    if( op != 0 ){
+        if( toknext_return == 4294967293 ){
+            tmp = 51241;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 4294967291 ){
+            tmp = 51201;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 4294967295 ){
+            tmp = 4059550258;
+            write_count = 4;
+            write();
+        }
+        if( toknext_return == 4294967285 ){
+            tmp = 4059550258;
+            write_count = 4;
+            write();
+            tmp = 53385;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 4294967289 ){
+            tmp = 57847;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 4294967286 ){
+            tmp = 51233;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 76 ){
+            tmp = 51209;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 46 ){
+            tmp = 51249;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 132 ){
+            tmp = 57555;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 154 ){
+            tmp = 59603;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 143 ){
+            tmp = 12109881;
+            write_count = 4;
+            write();
+            tmp = 15;
+            write();
+            tmp = 49300;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 4294967159 ){
+            tmp = 12109881;
+            write_count = 4;
+            write();
+            tmp = 15;
+            write();
+            tmp = 49301;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 12 ){
+            tmp = 12109881;
+            write_count = 4;
+            write();
+            tmp = 15;
+            write();
+            tmp = 49308;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 14 ){
+            tmp = 12109881;
+            write_count = 4;
+            write();
+            tmp = 15;
+            write();
+            tmp = 49311;
+            write_count = 2;
+            write();
+        }
+        if( toknext_return == 133 ){
+            op = 133; // LE
+        }
+        if( toknext_return == 153 ){
+            op = 153; // GE
+        }
+    }
 }
 
 int dest;
@@ -322,7 +499,7 @@ void compileassign() {
         tmp = findsymbol_return * 4;
         write_count = 4;
         write();
-        tmp = 1675;
+        tmp = 13195;
         write_count = 2;
         write();
         tmp = 60289;

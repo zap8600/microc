@@ -20,6 +20,7 @@
 #define TOK_BLK_END 77
 #define TOK_ASSIGN 13
 #define TOK_ADDR -10 // 65526 doesn't work here.
+
 #define TOK_SUB -3 // 65533 doesn't work here.
 #define TOK_ADD -5 // 65531 doesn't work here.
 #define TOK_DIV -1 // Added by me.
