@@ -156,7 +156,7 @@ uint32_t tok_next() {
         ch = getch();
     }
 
-    if(ch <= 57) tok_is_num = true;
+    if(ch >= 48 && ch <= 57) tok_is_num = true;
 
     while(ch > 32) {
         lasttwo = (lasttwo << 8) | (uint16_t)ch;
