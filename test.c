@@ -754,7 +754,7 @@ void main() {
             brk();
             if( toknext_return == 11 ){
                 symboltable = breakstart + ( ( ( symbolamount * 2 ) - 2 ) * 4 );
-                *(int*) symboltable = token;
+                *(int*) symboltable = toknext_return;
                 tmp = 233;
                 write_count = 1;
                 write();
