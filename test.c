@@ -179,7 +179,40 @@ int findsymbol_error;
 int findsymbol_isub;
 int findsymbol_notfound;
 int findsymbol_return;
+void findsymbol() {
+    findsymbol_i = 0;
+    findsymbol_notfound = 0;
+    findsymbol_isub = 0;
+    while( findsymbol_i < symbolamount ){
+        symboltable = breakstart + ( findsymbol_i * 8 );
+        findsymbol_return = *(int*) symboltable;
+        if( findsymbol_return == findsymbol_token ){
+            findsymbol_isub = symbolamount - findsymbol_i;
+            findsymbol_i = symbolamount - 1;
+        }
+        findsymbol_i = findsymbol_i + 1;
+    }
+    findsymbol_i = findsymbol_i - findsymbol_isub;
+    if( findsymbol_i >= symbolamount ){
+        if( findsymbol_error == 1 ){
+            close_fd = c;
+            close();
+            close_fd = out;
+            close();
+            brk_break = breakstart;
+            brk();
+            exit_errorcode = 1;
+            exit();
+        }
+        if( findsymbol_error == 0 ){
+            findsymbol_notfound = 1;
+            findsymbol_i = 0;
+        }
+    }
 
+    symboltable = breakstart + ( ( findsymbol_i * 8 ) + 4 );
+    findsymbol_return = *(int*) symboltable;
+}
 
 int tmp;
 
