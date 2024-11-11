@@ -124,7 +124,7 @@ void getch() {
         ch = 59;
     }
     if( semi != 1){
-        read_buf = &ch;
+        read_buf = & ch;
         read_count = 1;
         read();
 
