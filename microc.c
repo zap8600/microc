@@ -100,7 +100,7 @@ const uint8_t subinst[2] = {0x29, 0xc8};
 const uint8_t mulinst[2] = {0xf7, 0xe1};
 const uint8_t divinst[4] = {0x32, 0xd2, 0xf7, 0xf1};
 const uint8_t moduloinst[6] = {0x32, 0xd2, 0xf7, 0xf1, 0x89, 0xd0};
-const uint8_t andinst[2] = {0x21, 0xc8};
+const uint8_t bitandinst[2] = {0x21, 0xc8};
 const uint8_t orinst[2] = {0x09, 0xc8};
 const uint8_t xorinst[2] = {0x31, 0xc8};
 const uint8_t shlinst[2] = {0xd3, 0xe0};
@@ -317,7 +317,7 @@ void compile_expr(const uint32_t ttoken) {
             case TOK_MUL: fwrite(mulinst, 2, 1, out); break;
             case TOK_DIV: fwrite(divinst, 4, 1, out); break;
             case TOK_MODULO: fwrite(moduloinst, 6, 1, out); break;
-            case TOK_AND: fwrite(andinst, 2, 1, out); break;
+            case TOK_AND: fwrite(bitandinst, 2, 1, out); break;
             case TOK_OR: fwrite(orinst, 2, 1, out); break;
             case TOK_XOR: fwrite(xorinst, 2, 1, out); break;
             case TOK_SHL: fwrite(shlinst, 2, 1, out); break;
