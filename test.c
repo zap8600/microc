@@ -255,7 +255,30 @@ void compileunary() {
                 }
             }
             if( toknext_return == 4294967286 ){
-                if(  )
+                if( toknext_tokisnum == 1 ){
+                    compileunary();
+                }
+                if( toknext_tokisnum == 0 ){
+                    toknext();
+                    findsymbol_token = toknext_return;
+                    findsymbol_error = 1;
+                    findsymbol();
+                    tmp = 50049;
+                    write_count = 2;
+                    write();
+                    tmp = findsymbol_return * 4;
+                    write_count = 4;
+                    write();
+                    tmp = 909;
+                    write_count = 2;
+                    write();
+                    tmp = 60289;
+                    write();
+                    tmp = findsymbol_return * 4;
+                    write_count = 4;
+                    write();
+                    toknext();
+                }
             }
         }
         if( toknext_return == 4294967288 ){
